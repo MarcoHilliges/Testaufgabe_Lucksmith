@@ -1,0 +1,15 @@
+services:
+  rabbitmq:
+    image: rabbitmq:4-management-alpine
+    hostname: rabbitmq-broker
+    ports:
+      - "5672:5672"
+      - "1883:1883"
+      - "15672:15672"
+    environment:
+      RABBITMQ_DEFAULT_USER: guest
+      RABBITMQ_DEFAULT_PASS: guest
+    volumes:
+      - ./data/rabbitmq:/var/lib/rabbitmq
+      - ./config/enabled_plugins:/etc/rabbitmq/enabled_plugins
+    restart: unless-stopped

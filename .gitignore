@@ -1,0 +1,40 @@
+# Dependencies
+node_modules/
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+ENV/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+*.code-workspace
+
+# OS
+Thumbs.db
+.DS_Store
+
+# Build
+dist/
+build/
+*.egg-info/
+
+# Environment
+.env
+.env.local
+
+# Logs
+logs/
+*.log
+
+# Docker data (Keep this folder tracked but ignore its contents)
+# docker/data/ is tracked for structure, but runtime data is ignored
+docker/data/rabbitmq/mnesia/
