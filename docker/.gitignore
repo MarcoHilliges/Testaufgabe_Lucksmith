@@ -1,0 +1,2 @@
+# docker/data/ is tracked for structure, but runtime data is ignored
+mnesia
