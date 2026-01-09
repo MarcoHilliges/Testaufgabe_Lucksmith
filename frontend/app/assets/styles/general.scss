@@ -1,0 +1,61 @@
+@use "./animations.scss";
+@use "./button.scss";
+
+body {
+  @apply bg-page text-primary dark:bg-pageDark dark:text-primary-light;
+
+  .page-2 {
+    -webkit-mask-image: linear-gradient(
+      to bottom,
+      rgba(255, 250, 235, 0) 0%,
+      rgba(255, 250, 235, 1) 100px,
+      rgba(255, 250, 235, 1) calc(100% - 100px),
+      rgba(255, 250, 235, 0) 100%
+    );
+    mask-image: linear-gradient(
+      to bottom,
+      rgba(255, 250, 235, 0) 0%,
+      rgba(255, 250, 235, 1) 100px,
+      rgba(255, 250, 235, 1) calc(100% - 100px),
+      rgba(255, 250, 235, 0) 100%
+    );
+
+    @apply bg-page2 dark:bg-pageDark2 pt-[100px] pb-[100px];
+  }
+}
+
+.section {
+  @apply flex flex-col items-center gap-24 px-24;
+}
+
+h1 {
+  @apply text-h1 font-bold;
+}
+
+h2 {
+  @apply text-h2 font-semibold;
+}
+
+h3 {
+  @apply text-h3 font-semibold;
+}
+
+.light-effect {
+  background-image: radial-gradient(
+      93% 87% at 87% 89%,
+      rgba(0, 0, 0, 0.23) 0%,
+      transparent 86.18%
+    ),
+    radial-gradient(
+      66% 87% at 26% 20%,
+      rgba(255, 255, 255, 0.41) 0%,
+      rgba(255, 255, 255, 0) 69.79%,
+      rgba(255, 255, 255, 0) 100%
+    );
+
+  box-shadow: inset 0 4px 16px rgba(255, 255, 255, 0.45);
+}
+
+.card-color {
+  @apply bg-blue-50 dark:bg-blue-100 text-primary;
+}
