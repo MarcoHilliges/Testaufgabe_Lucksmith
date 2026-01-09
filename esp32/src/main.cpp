@@ -63,24 +63,50 @@ void callback(char* topic, byte* payload, unsigned int length) {
   Serial.print("Nachricht empfangen auf Topic: [");
   Serial.print(topic);
   Serial.print("] Payload: ");
-  String message = "";
+  
+  // Konvertiere Payload zu einem String für einfachere Verarbeitung
+  String payloadString = "";
   for (int i = 0; i < length; i++) {
-    message += (char)payload[i];
+    payloadString += (char)payload[i];
   }
-  Serial.println(message);
+  Serial.println(payloadString);
 
   // Wenn der Befehl für GPIO-Steuerung empfangen wird
   if (String(topic) == topic_gpio_set_sub) {
-    // Annahme: Message-Format ist "PIN_NUMMER:STATE" z.B. "2:ON" oder "4:OFF"
-    int colonIndex = message.indexOf(':');
-    if (colonIndex != -1) {
-      String pinStr = message.substring(0, colonIndex);
-      String stateStr = message.substring(colonIndex + 1);
+    // --- JSON-Parsing mit ArduinoJson ---
+    DynamicJsonDocument doc(512); // Eine moderate Kapazität für die Befehle
+    
+    // Parsen der JSON-Payload
+    DeserializationError error = deserializeJson(doc, payloadString);
 
-      int pinNum = pinStr.toInt();
-      int newState = (stateStr == "ON" || stateStr == "1") ? HIGH : LOW;
+    // Prüfen, ob das Parsen erfolgreich war
+    if (error) {
+      Serial.print(F("JSON-Parsing fehlgeschlagen: "));
+      Serial.println(error.f_str());
+      return; // Funktion beenden, da keine gültige JSON-Nachricht
+    }
 
-      // Finde den Pin im Array und aktualisiere seinen Zustand
+    // Iteriere über die Schlüssel-Wert-Paare in der JSON-Nachricht
+    // Erwarte Keys wie "2", "4" (Pinnummern als Strings) und Werte wie "ON", "OFF"
+    for (JsonPair p : doc.as<JsonObject>()) {
+      int pinNum = String(p.key().c_str()).toInt(); // Key (Pinnummer) als Integer
+      String stateStr = p.value().as<String>();     // Wert (Zustand) als String
+
+      int newState = LOW;
+      if (stateStr == "ON" || stateStr == "1" || stateStr == "HIGH") {
+        newState = HIGH;
+      } else if (stateStr == "OFF" || stateStr == "0" || stateStr == "LOW") {
+        newState = LOW;
+      } else {
+        Serial.print("Unbekannter Zustand für Pin ");
+        Serial.print(pinNum);
+        Serial.print(": ");
+        Serial.println(stateStr);
+        continue; // Nächsten Pin verarbeiten
+      }
+
+      // Finde den Pin im control_pins Array und aktualisiere seinen Zustand
+      bool pinFound = false;
       for (int i = 0; i < NUM_PINS; i++) {
         if (control_pins[i] == pinNum) {
           digitalWrite(pinNum, newState);
@@ -89,14 +115,18 @@ void callback(char* topic, byte* payload, unsigned int length) {
           Serial.print(pinNum);
           Serial.print(" auf ");
           Serial.println(newState == HIGH ? "HIGH" : "LOW");
-
-          // Statusänderung zurückmelden
-          // Sende den Zustand aller Pins, oder nur des geänderten
-          reportGpioStates(); // Sende alle Pins als JSON
-          break;
+          pinFound = true;
+          break; // Pin gefunden und verarbeitet
         }
       }
+      if (!pinFound) {
+        Serial.print("Befehl für unbekannten oder nicht steuerbaren Pin empfangen: ");
+        Serial.println(pinNum);
+      }
     }
+    // Nach dem Verarbeiten aller Befehle den aktualisierten Status aller Pins senden
+    reportGpioStates();
+    // --- Ende JSON-Parsing ---
   }
 }
 
