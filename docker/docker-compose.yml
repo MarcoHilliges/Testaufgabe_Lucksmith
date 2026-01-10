@@ -6,6 +6,7 @@ services:
       - "5672:5672"
       - "1883:1883"
       - "15672:15672"
+      - "15675:15675"
     environment:
       RABBITMQ_DEFAULT_USER: guest
       RABBITMQ_DEFAULT_PASS: guest
