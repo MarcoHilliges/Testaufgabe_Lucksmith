@@ -1,3 +1,5 @@
+#include "secrets.h"
+
 #include <ArduinoJson.h>
 #include <WiFi.h>
 #include <PubSubClient.h>
@@ -5,21 +7,21 @@
 // ----------------------------------------
 // 1. WLAN-Einstellungen
 // ----------------------------------------
-const char* ssid = "DEIN_WLAN_SSID";
-const char* password = "DEIN_WLAN_PASSWORT";
+const char* ssid = WIFI_SSID;
+const char* password = WIFI_PASSWORD;
 
 // ----------------------------------------
 // 2. MQTT-Einstellungen
 // ----------------------------------------
 // !!! WICHTIG: Ersetze dies durch die IP-Adresse deines PCs, auf dem Docker läuft !!!
-const char* mqtt_broker = "192.168.1.100";
-const int mqtt_port = 1883;
-const char* mqtt_user = "guest";          // Gemäß docker-compose.yml
-const char* mqtt_pass = "guest";          // Gemäß docker-compose.yml
+const char* mqtt_broker = MQTT_BROKER_IP;
+const int mqtt_port = MQTT_BROKER_PORT;
+const char* mqtt_user = MQTT_USERNAME;
+const char* mqtt_pass = MQTT_PASSWORD;
 
 // Eindeutige ID für diesen ESP32 (muss für jedes Gerät eindeutig sein!)
 // Wird im MQTT-Topic verwendet.
-const String deviceId = "TestESP"; // Z.B. esp32-1, esp32-buero, etc.
+const String deviceId = String(DEVICE_ID); // Konvertiere den #define zu String
 
 // MQTT Topics (verwende String-Objekte für einfache Konkatenation)
 String topic_status_pub = "esp32/" + deviceId + "/status"; // Für Heartbeat/Online-Status
