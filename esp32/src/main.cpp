@@ -19,15 +19,14 @@ const int mqtt_port = MQTT_BROKER_PORT;
 const char* mqtt_user = MQTT_USERNAME;
 const char* mqtt_pass = MQTT_PASSWORD;
 
-// Eindeutige ID für diesen ESP32 (muss für jedes Gerät eindeutig sein!)
-// Wird im MQTT-Topic verwendet.
-const String deviceId = String(DEVICE_ID); // Konvertiere den #define zu String
+// Eindeutige ID für diesen ESP32 (wird zur Laufzeit generiert)
+String deviceId;
 
-// MQTT Topics (verwende String-Objekte für einfache Konkatenation)
-String topic_status_pub = "esp32/" + deviceId + "/status"; // Für Heartbeat/Online-Status
-String topic_wifi_scan_pub = "esp32/" + deviceId + "/wifi/scan"; // Für WiFi-Scan-Ergebnisse
-String topic_gpio_state_pub = "esp32/" + deviceId + "/gpio/state"; // Für GPIO-Zustände
-String topic_gpio_set_sub = "esp32/" + deviceId + "/gpio/set"; // Zum Empfangen von GPIO-Befehlen
+// MQTT Topics (werden in setup() initialisiert)
+String topic_status_pub;
+String topic_wifi_scan_pub;
+String topic_gpio_state_pub;
+String topic_gpio_set_sub;
 
 WiFiClient espClient; // Erstellt einen TCP-Client für die WLAN-Verbindung
 PubSubClient client(espClient); // Erstellt den MQTT-Client mit dem TCP-Client
@@ -257,13 +256,47 @@ void reportGpioStates() {
 // ----------------------------------------
 void setup() {
   Serial.begin(115200); // Serielle Ausgabe starten für Debugging
+  Serial.println("Setup starting...");
+
+  // Debug-Ausgabe der Secret-Werte (optional, nur für Entwicklung)
+  Serial.print("WLAN SSID: "); Serial.println(ssid);
+  Serial.print("MQTT Broker IP: "); Serial.println(mqtt_broker);
+  Serial.print("MQTT Username: "); Serial.println(mqtt_user);
+  Serial.print("MQTT Password: "); Serial.println(mqtt_pass);
+  Serial.print("Base Device Name: "); Serial.println(BASE_DEVICE_NAME); // Zeigt den Wert aus secrets.h
+
 
   // GPIO Pins als OUTPUT konfigurieren und initialen Zustand setzen
   for (int i = 0; i < NUM_PINS; i++) {
-    pinMode(control_pins[i], OUTPUT); // Für SENSOR_GPIO würde man INPUT_PULLUP nutzen
+    pinMode(control_pins[i], OUTPUT);
     digitalWrite(control_pins[i], LOW);
-    gpio_states[i] = LOW; // Initialzustand speichern
+    gpio_states[i] = LOW;
   }
+
+  // --- Generiere die eindeutige Device ID ---
+  uint8_t mac[6];
+  WiFi.macAddress(mac); // Holt die 6-Byte MAC-Adresse
+
+  char macStr[18]; // Puffer für "XX:XX:XX:XX:XX:XX\0" (17 Zeichen) oder "XXXXXXXXXXXX\0" (13 Zeichen)
+  // Formatierung als "XXXXXXXXXXXX" ohne Doppelpunkte, um URL-freundlicher zu sein
+  sprintf(macStr, "%02X%02X%02X%02X%02X%02X", mac[0], mac[1], mac[2], mac[3], mac[4], mac[5]);
+
+  deviceId = String(BASE_DEVICE_NAME) + "-" + String(macStr);
+  // --- Ende Generierung ---
+
+  // --- MQTT Topics dynamisch initialisieren ---
+  topic_status_pub = "esp32/" + deviceId + "/status";
+  topic_wifi_scan_pub = "esp32/" + deviceId + "/wifi/scan";
+  topic_gpio_state_pub = "esp32/" + deviceId + "/gpio/state";
+  topic_gpio_set_sub = "esp32/" + deviceId + "/gpio/set";
+  
+  // Debug-Ausgabe der generierten Topics
+  Serial.print("MQTT Topic Heartbeat: "); Serial.println(topic_status_pub);
+  Serial.print("MQTT Topic WiFi Scan: "); Serial.println(topic_wifi_scan_pub);
+  Serial.print("MQTT Topic GPIO State: "); Serial.println(topic_gpio_state_pub);
+  Serial.print("MQTT Topic GPIO Set (Sub): "); Serial.println(topic_gpio_set_sub);
+  // --- Ende Topics Initialisierung ---
+
 
   setup_wifi(); // WLAN verbinden
 

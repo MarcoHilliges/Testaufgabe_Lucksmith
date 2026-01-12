@@ -29,9 +29,7 @@ export default defineNuxtPlugin(nuxtApp => {
   client.on('connect', () => {
     console.log('MQTT Client connected to broker (manual plugin)!');
     // Hier könntest du einen globalen Event-Bus triggern, wenn du möchtest
-    client.subscribe("esp32/TestESP/gpio/state");
-    client.subscribe("esp32/TestESP/status");
-    client.subscribe("esp32/TestESP/wifi/scan");
+    client.subscribe("esp32/#");
   });
 
   client.on('error', (error) => {
