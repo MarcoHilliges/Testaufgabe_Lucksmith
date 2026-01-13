@@ -2,8 +2,16 @@
   "andValueMore": "and one more... | and {count} more...",
   "appTitle": "Monitoring and control of ESP32-based IoT devices",
   "data-protection": "Data Protection",
+  "devices": "Devices",
   "imprint": "Imprint",
   "others": "Others",
   "phone": "Phone",
+  "status": {
+    "error": "Error",
+    "offline": "Offline",
+    "online": "Online",
+    "timeout": "Timeout",
+    "unknown": "Unknown"
+  },
   "welcome": "Welcome"
 }

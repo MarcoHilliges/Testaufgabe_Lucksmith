@@ -3,8 +3,8 @@ const { t } = useI18n();
 
 const navLinks = [
   {
-    id: "#start",
-    text: t("common.start"),
+    id: "#devices",
+    text: t("common.devices"),
   }
 ];
 </script>

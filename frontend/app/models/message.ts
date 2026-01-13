@@ -73,5 +73,6 @@ export type DeviceMessage =
 export interface Device {
   id: string;
   name: string;
+  lastSeen: number | null;
   messages: DeviceMessage[];
 }

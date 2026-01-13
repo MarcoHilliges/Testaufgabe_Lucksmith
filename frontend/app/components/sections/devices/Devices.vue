@@ -9,6 +9,7 @@ import {
   type StatusMessage,
   type WifiScanMessage,
 } from "~/models/message";
+import ESP32 from "./ESP32.vue";
 
 const { t } = useI18n();
 
@@ -41,11 +42,12 @@ onMounted(() => {
     let deviceEntry = devices.value.find(({ id }) => id === deviceId);
 
     if (!deviceEntry) {
-      const entry = { id: deviceId, name: deviceName, messages: [] };
+      const entry = { id: deviceId, name: deviceName, lastSeen: null, messages: [] };
       devices.value.push(entry);
       deviceEntry = devices.value.find(({ id }) => id === deviceId);
     }
     if (!deviceEntry) return console.error("Device Entry should exist here.");
+    deviceEntry.lastSeen = Date.now();
 
     switch (topicType) {
       case MessageTopic.STATUS:
@@ -118,7 +120,6 @@ onMounted(() => {
             timestamp: Date.now(),
           };
 
-          // Füge die neue Nachricht hinzu und beschränke die Liste auf die letzten 10 Einträge
           gpioTopicEntry.messages = [
             gpioStateMessage,
             ...gpioTopicEntry.messages,
@@ -149,15 +150,16 @@ function setGpioPinState(
 </script>
 
 <template>
-  <div id="start" class="mt-[92px] flex flex-col items-center">
+  <div id="devices" class="mt-[92px] flex flex-col items-center">
     <span> mqttIsConnected: {{ mqttIsConnected }} </span>
 
     <div>
       <template v-for="device in devices" :key="device.id">
-        <SectionsDeviceESP32
+        <ESP32
           :id="device.id"
           :name="device.name"
           :messages="device.messages"
+          :lastSeen="device.lastSeen"
           @setGpioPin="({pin, value}) => setGpioPinState(device.name, device.id, pin, value)"
         />
       </template>
