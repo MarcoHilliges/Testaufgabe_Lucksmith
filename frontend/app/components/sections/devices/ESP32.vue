@@ -29,6 +29,9 @@ const lastStatusMessage = computed(() => {
   );
 });
 
+const currentTime = ref(Date.now());
+let timerInterval: NodeJS.Timeout | null = null;
+
 const deviceHasTimeout = computed(() => {
   if (!props.lastSeen) return true;
   const timeoutDuration = 45 * 1000;
@@ -124,8 +127,6 @@ function formatTimestamp(timestamp: number | undefined | null) {
   return date.toLocaleString();
 }
 
-const currentTime = ref(Date.now());
-let timerInterval: NodeJS.Timeout | null = null;
 onMounted(() => {
   timerInterval = setInterval(() => {
     currentTime.value = Date.now();
