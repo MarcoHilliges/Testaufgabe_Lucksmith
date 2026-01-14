@@ -2,12 +2,17 @@
 import { WifiZero, WifiLow, WifiHigh, Wifi } from "lucide-vue-next";
 import type { DeviceStatus, WifiScanMessage } from "~/models/message";
 
-const { t } = useI18n();
+const emit = defineEmits<{
+  getWifiScan: [];
+}>();
+
 const props = defineProps<{
   wiFiScanMessages: WifiScanMessage[];
   deviceStatus: DeviceStatus;
   connectedWiFi: string;
 }>();
+
+const { t } = useI18n();
 
 const lastWifiScan = computed(() => {
   return props.wiFiScanMessages?.[0];
@@ -26,10 +31,27 @@ const lastWifiScanNetworks = computed(() => {
 
 // Helpers
 function formatTimestamp(timestamp: number | undefined | null) {
-  if (!timestamp) return "-";
+  if (!timestamp) return "";
   const date = new Date(timestamp);
   return date.toLocaleString();
 }
+
+watch(
+  () => lastWifiScanTimestamp.value,
+  () => {
+    isLoadingWifiScan.value = false;
+  }
+);
+
+onMounted(() => {
+  if (
+    lastWifiScan.value === null ||
+    Date.now() - (lastWifiScan.value?.timestamp || 60000) > 45000
+  ) {
+    isLoadingWifiScan.value = true;
+    emit("getWifiScan");
+  }
+});
 </script>
 
 <template>

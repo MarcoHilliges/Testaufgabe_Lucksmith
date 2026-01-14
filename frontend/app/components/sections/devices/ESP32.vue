@@ -3,7 +3,6 @@ import { WifiZero, WifiLow, WifiHigh, Wifi } from "lucide-vue-next";
 import {
   GPIOPin,
   GPIOPinState,
-  GPIOSubTopic,
   MessageTopic,
   WifiSubTopic,
   type DeviceMessage,
@@ -74,77 +73,20 @@ const lastWifiScanTimestamp = computed(() => {
   return formatTimestamp(lastWifiScan.value?.timestamp);
 });
 
-const lastWifiScanNetworks = computed(() => {
-  return lastWifiScan.value
-    ? lastWifiScan.value.networks.sort((a, b) => b.rssi - a.rssi)
-    : [];
-});
-
 // GPIO
-const lastGpioMessage = computed(() => {
+const gpioMessages = computed(() => {
   return (
-    props.messages.filter((msg) => msg.topic === MessageTopic.GPIO)?.[0] || null
+    props.messages.find((msg) => msg.topic === MessageTopic.GPIO)?.messages ||
+    []
   );
 });
 
-const lastGpioStatesMessage = computed(() => {
-  return (
-    lastGpioMessage.value?.messages.filter(
-      (msg) => msg.supTopic === GPIOSubTopic.STATE
-    )?.[0] || null
-  );
-});
 
-const lastGpioStatesTimestamp = computed(() => {
-  return formatTimestamp(lastGpioStatesMessage.value?.timestamp);
-});
-
-const isLoadingGpioStates = ref(null as null | number);
-const gpioPinStates = ref<Record<GPIOPin, GPIOPinState> | null>(null);
-
-function setGpioPinState(pin: GPIOPin, value: GPIOPinState) {
-  if (isLoadingGpioStates.value) return;
-  isLoadingGpioStates.value = pin;
-
-  emit("setGpioPin", { pin, value });
-}
-
-watch(
-  () => lastGpioStatesTimestamp.value,
-  () => {
-    gpioPinStates.value = lastGpioStatesMessage.value
-      ? { ...lastGpioStatesMessage.value.state }
-      : null;
-    isLoadingGpioStates.value = null;
-  },
-  { immediate: true }
-);
-
-watch(
-  () => lastWifiScanTimestamp.value,
-  () => {
-    isLoadingWifiScan.value = false;
-  }
-);
 
 // Lifecycle
 onMounted(() => {
   if (Date.now() - (props.lastSeen || 60000) > 45000) {
     emit("getStatus");
-    emit("getWifiScan");
-    emit("getGpioStates");
-    isLoadingWifiScan.value = true;
-  } else {
-    if (Date.now() - (lastWifiScan.value?.timestamp || 120000) > 90000) {
-      isLoadingWifiScan.value = true;
-      emit("getWifiScan");
-    }
-    if (
-      Date.now() - (lastGpioStatesMessage.value?.timestamp || 120000) >
-      90000
-    ) {
-      emit("getGpioStates");
-    }
   }
 });
 
@@ -199,69 +141,15 @@ function formatTimestamp(timestamp: number | undefined | null) {
         :deviceStatus="deviceStatus"
         :connectedWiFi="lastStatusMessage?.wifi || ''"
         class="w-1/2"
+        @getWifiScan="emit('getWifiScan')"
       />
-      <div class="w-1/2 flex flex-col items-center gap-6">
-        <span>GPIO</span>
-        <div class="w-full flex justify-center items-center relative">
-          <span>{{ lastGpioStatesTimestamp }}</span>
-          <BasicSpinner
-            v-if="isLoadingGpioStates"
-            class="absolute right-0"
-            :size="12"
-          />
-        </div>
-
-        <ul class="flex flex-col gap-6">
-          <li
-            v-for="(value, pin) in gpioPinStates"
-            :key="pin"
-            class="flex gap-12 justify-between items-center"
-          >
-            <span class="whitespace-nowrap">Pin {{ pin }}</span>
-
-            <div class="flex items-center justify-between text-10">
-              <button
-                class="flex items-center justify-center w-24 h-20 rounded-l-md hover:text-success-active"
-                :class="{
-                  'bg-success': value === 1,
-                  'bg-gray-300': value === 0,
-                  'pointer-events-none':
-                    isLoadingGpioStates ||
-                    value === null ||
-                    value === undefined ||
-                    value === 1 ||
-                    deviceStatus !== 'online',
-                  'opacity-50': deviceStatus !== 'online',
-                  'text-success-active':
-                    isLoadingGpioStates === Number(pin) && value === 0,
-                }"
-                @click="setGpioPinState(Number(pin), 1)"
-              >
-                ON
-              </button>
-              <button
-                class="flex items-center justify-center w-24 h-20 rounded-r-md hover:text-error"
-                :class="{
-                  'bg-error': value === 0,
-                  'bg-gray-300': value === 1,
-                  'pointer-events-none':
-                    isLoadingGpioStates ||
-                    value === null ||
-                    value === undefined ||
-                    value === 0 ||
-                    deviceStatus !== 'online',
-                  'opacity-50': deviceStatus !== 'online',
-                  'text-error':
-                    isLoadingGpioStates === Number(pin) && value === 1,
-                }"
-                @click="setGpioPinState(Number(pin), 0)"
-              >
-                OFF
-              </button>
-            </div>
-          </li>
-        </ul>
-      </div>
+      <SectionsDevicesComponentsGpioList
+        :gpioStateMessages="gpioMessages"
+        :deviceStatus="deviceStatus"
+        class="w-1/2"
+        @getGpioStates="emit('getGpioStates')"
+        @setGpioPin="(params) => emit('setGpioPin', params)"
+      />
     </div>
   </div>
 </template>
