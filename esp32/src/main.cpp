@@ -194,14 +194,19 @@ void reconnect_mqtt() {
   // Schleife, solange keine Verbindung zum Broker besteht
   while (!client.connected()) {
     Serial.print("Versuche MQTT-Verbindung...");
-    
-    // Setzt die Last Will and Testament (LWT) Nachricht
-    // Diese wird vom Broker gesendet, falls der ESP32 unerwartet offline geht.
-    // 'online' wird beim erfolgreichen Connect gesendet, 'offline' bei unerwartetem Disconnect.
-    // client.setWill(topic_status_pub.c_str(), "{\"status\":\"offline\",\"reason\":\"unexpected_disconnect\"}", true, 0);
 
     // Versuche, eine Verbindung zum MQTT-Broker herzustellen
-    if (client.connect(deviceId.c_str(), mqtt_user, mqtt_pass)) {
+    if (client.connect(
+          deviceId.c_str(),         // Client-ID (eindeutige Geräte-ID)
+          mqtt_user,                // MQTT-Benutzername
+          mqtt_pass,                // MQTT-Passwort
+          topic_status_pub.c_str(), // willTopic
+          0,                        // willQoS
+          true,                     // willRetain
+          "{\"status\":\"offline\"}" // willMessage
+          )
+        )
+      {
       Serial.println("verbunden!");
 
       // Sende sofort nach dem Connect eine "online"-Statusnachricht (LWT wird überschrieben)
