@@ -1,9 +1,13 @@
 <script setup lang="ts">
-import type { DeviceStatus } from "~/models/message";
+import {
+  MessageTopic,
+  type DeviceStatus,
+  type SettingsMessage,
+} from "~/models/message";
 import { Info } from "lucide-vue-next";
 
 interface SettingsItem {
-  key: string;
+  key: keyof SettingsMessage;
   label: string;
   description: string;
   value: string | number | null;
@@ -28,9 +32,9 @@ const settingsItems = ref<SettingsItem[]>([
     valueType: "string",
   },
   {
-    key: "wifiUpdateInterval",
-    label: t("device.settings.wifiUpdateInterval"),
-    description: t("device.settings.wifiUpdateIntervalDescription"),
+    key: "wifiScanInterval",
+    label: t("device.settings.wifiScanInterval"),
+    description: t("device.settings.wifiScanIntervalDescription"),
     value: null,
     valueType: "number",
   },
@@ -43,16 +47,35 @@ onMounted(() => {
     console.log("Received MQTT message on topic:", topic);
     console.log("Message payload:", message.toString());
     const deviceIdAndName = topic.split("/")[1]; // Extrahiere die Geräte-ID aus dem Topic
-
+    const topicType = topic.split("/")[2]; // Extrahiere den Nachrichtentyp aus dem Topic
     const last_dash_index = deviceIdAndName?.lastIndexOf("-");
-    if (!last_dash_index || !deviceIdAndName) return;
+
+    if (
+      !last_dash_index ||
+      !deviceIdAndName ||
+      topicType !== MessageTopic.SETTINGS
+    )
+      return;
     const deviceName = deviceIdAndName.substring(0, last_dash_index);
     const deviceId = deviceIdAndName.substring(last_dash_index + 1);
 
     if (deviceId !== props.deviceId) return;
     console.log("message received", JSON.parse(message.toString()));
-    const messageData = JSON.parse(message.toString());
-    
+    const messageData: SettingsMessage = JSON.parse(message.toString());
+
+    settingsItems.value.forEach((item) => {
+      const dataValue = messageData[item.key as keyof SettingsMessage];
+      if (dataValue !== undefined && typeof dataValue === item.valueType) {
+        switch (item.key) {
+          case "deviceName":
+            item.value = dataValue;
+            break;
+
+          default:
+            item.value = dataValue;
+        }
+      }
+    });
   });
   getSettings();
 });

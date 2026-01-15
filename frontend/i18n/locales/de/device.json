@@ -4,8 +4,8 @@
     "deviceName": "Gerätename",
     "deviceNameDescription": "Der Name des Geräts wie er im Netzwerk erscheint.",
     "loading": "Lädt die Einstellungen...",
-    "wifiUpdateInterval": "WiFi Update Intervall",
-    "wifiUpdateIntervalDescription": "Intervall in Sekunden für WiFi Status Updates."
+    "wifiScanInterval": "WiFi Scan Intervall",
+    "wifiScanIntervalDescription": "Intervall in Sekunden für WiFi Status Scans."
   },
   "tabs": {
     "gpio": "GPIO",
