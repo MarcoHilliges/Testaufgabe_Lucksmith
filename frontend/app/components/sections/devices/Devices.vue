@@ -13,8 +13,6 @@ import ESP32 from "./ESP32.vue";
 
 const { $mqtt, $mqttConnectionState } = useNuxtApp();
 
-const localStorageKey = "Device_Data";
-
 const {
   devices,
   addDevice,
@@ -22,12 +20,13 @@ const {
   updateDeviceLastSeen,
   addStatusMessage,
   addWifiScanMessage,
-  addGpioStateMessage
+  addGpioStateMessage,
+  saveDataIntoLocalStorage,
+  loadDataFromLocalStorage
 } = useDeviceStore();
-// const devices = ref<Device[]>([]);
 
 onMounted(() => {
-  loadDataFromLocalStorage();
+  loadDataFromStorage();
   devices.value.forEach((device) => {
     device.lastSeen = null;
   });
@@ -138,14 +137,9 @@ function getGpioStates(deviceName: string, deviceId: string) {
   $mqtt.publish(topic, "");
 }
 
-function saveDataIntoLocalStorage() {
-  console.log("Saving device data into localStorage.");
-  localStorage.setItem(localStorageKey, JSON.stringify(devices.value));
-}
-
-function loadDataFromLocalStorage() {
+function loadDataFromStorage() {
   console.log("Loading device data from localStorage.");
-  const data = localStorage.getItem(localStorageKey);
+  const data = loadDataFromLocalStorage()
   if (data) {
     initializeStore(JSON.parse(data));
   }

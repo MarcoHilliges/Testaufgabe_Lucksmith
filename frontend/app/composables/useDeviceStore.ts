@@ -8,6 +8,7 @@ import {
 
 const devices = ref<Device[]>([]);
 let isInitialized = false;
+const localStorageKey = "Device_Data";
 
 export const useDeviceStore = () => {
   const initializeStore = (initialData: Device[] = []) => {
@@ -91,6 +92,17 @@ export const useDeviceStore = () => {
     }
   };
 
+  const saveDataIntoLocalStorage = () => {
+    console.log("Saving device data into localStorage.");
+    localStorage.setItem(localStorageKey, JSON.stringify(devices.value));
+  };
+
+  const loadDataFromLocalStorage = () => {
+    console.log("Loading device data from localStorage.");
+    const data = localStorage.getItem(localStorageKey);
+    return data;
+  };
+
   return {
     devices: computed(() => devices.value),
     initializeStore,
@@ -100,5 +112,7 @@ export const useDeviceStore = () => {
     addStatusMessage,
     addWifiScanMessage,
     addGpioStateMessage,
+    saveDataIntoLocalStorage,
+    loadDataFromLocalStorage
   };
 };

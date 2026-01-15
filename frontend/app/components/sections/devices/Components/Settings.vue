@@ -23,6 +23,8 @@ const props = defineProps<{
   deviceName: string;
 }>();
 
+const { updateDeviceName } = useDeviceStore();
+
 const settingsItems = ref<SettingsItem[]>([
   {
     key: "deviceName",
@@ -40,6 +42,15 @@ const settingsItems = ref<SettingsItem[]>([
   },
 ]);
 
+const defaultValues = ref<SettingsItem[]>([]);
+
+const valuesAreChanged = computed(() => {
+  return (
+    !isLoadingSettings.value &&
+    JSON.stringify(defaultValues.value) !== JSON.stringify(settingsItems.value)
+  );
+});
+
 const isLoadingSettings = ref(false);
 
 onMounted(() => {
@@ -54,7 +65,7 @@ onMounted(() => {
       topicType !== MessageTopic.SETTINGS
     )
       return;
-    const deviceName = deviceIdAndName.substring(0, last_dash_index);
+
     const deviceId = deviceIdAndName.substring(last_dash_index + 1);
 
     if (deviceId !== props.deviceId) return;
@@ -65,7 +76,8 @@ onMounted(() => {
       if (dataValue !== undefined && typeof dataValue === item.valueType) {
         switch (item.key) {
           case "deviceName":
-            item.value = dataValue;
+            item.value = String(dataValue);
+            updateDeviceName(props.deviceId, String(dataValue));
             break;
 
           default:
@@ -73,18 +85,41 @@ onMounted(() => {
         }
       }
     });
+
+    defaultValues.value = JSON.parse(JSON.stringify(settingsItems.value));
+
+    isLoadingSettings.value = false;
   });
+
   getSettings();
 });
 
 function getSettings() {
-  const topic = `esp32/${props.deviceName}-${props.deviceId}/settings/get`;
-  $mqtt.publish(topic, "");
+  isLoadingSettings.value = true;
+  $mqtt.publish(`esp32/${props.deviceName}-${props.deviceId}/settings/get`, "");
+}
+
+function saveChanges() {
+  if (!valuesAreChanged.value || isLoadingSettings.value) return;
+
+  const topic = `esp32/${props.deviceName}-${props.deviceId}/settings/set`;
+  const message: Partial<SettingsMessage> = {};
+  settingsItems.value.forEach((item) => {
+    if (!item.value) return;
+    const defaultValue = defaultValues.value.find(
+      ({ key }) => key === item.key
+    )?.value;
+    if (defaultValue && defaultValue !== item.value)
+      message[item.key] = item.value;
+  });
+
+  isLoadingSettings.value = true;
+  $mqtt.publish(topic, JSON.stringify(message));
 }
 </script>
 
 <template>
-  <div class="relative">
+  <div class="relative h-full flex flex-col">
     <ul
       class="overflow-y-auto"
       :class="{
@@ -100,9 +135,26 @@ function getSettings() {
         <BasicTooltip :tooltipText="item.description">
           <Info class="w-14 h-14 text-gray-500" />
         </BasicTooltip>
-        <span class="ml-auto">{{ item.value }}</span>
+        <input
+          v-model="item.value"
+          :type="item.valueType"
+          class="w-[100px] ml-auto"
+        />
       </li>
     </ul>
+    <div class="mt-auto flex justify-end pb-6 mx-12">
+      <button
+        class="px-12 py-6 border rounded"
+        :class="
+          valuesAreChanged
+            ? 'border-success hover:border-success-hover active:border-success-active'
+            : 'border-border pointer-events-none'
+        "
+        @click="saveChanges()"
+      >
+        {{ t("common.save") }}
+      </button>
+    </div>
     <div
       v-if="isLoadingSettings || props.deviceStatus === 'offline'"
       class="absolute top-0 left-0 right-0 bottom-0 flex flex-col justify-center items-center"

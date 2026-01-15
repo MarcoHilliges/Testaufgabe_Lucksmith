@@ -187,7 +187,6 @@ watch(
         :deviceStatus="deviceStatus"
         :deviceId="props.id"
         :deviceName="props.name"
-        class="h-full"
       />
     </div>
 
