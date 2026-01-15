@@ -9,6 +9,8 @@ import {
   type MqttClientState,
 } from "~/models/message";
 
+type ContentTab = "overview" | "wifi" | "gpio" | "settings";
+
 const emit = defineEmits<{
   setGpioPin: [{ pin: GPIOPin; value: GPIOPinState }];
   getStatus: [];
@@ -25,6 +27,14 @@ const props = defineProps<{
 }>();
 
 const { t } = useI18n();
+
+const content = ref<ContentTab>("overview");
+const tabs: { label: string; value: ContentTab }[] = [
+  { label: t("device.tabs.overview"), value: "overview" },
+  { label: t("device.tabs.wifi"), value: "wifi" },
+  { label: t("device.tabs.gpio"), value: "gpio" },
+  { label: t("device.tabs.settings"), value: "settings" },
+];
 
 // Status
 const lastStatusMessage = computed(() => {
@@ -98,56 +108,88 @@ watch(
 
 <template>
   <div
-    class="max-w-[400px] min-w-[300px] sm:min-w-[400px] min-h-[300px] flex flex-col border p-16 m-24 rounded-md card-color light-effect"
+    class="max-w-[400px] min-w-[300px] sm:min-w-[400px] h-[300px] flex flex-col border pt-16 m-24 rounded-md card-color light-effect"
   >
-    <div class="flex justify-between gap-10">
-      <h2>{{ props.name }}</h2>
-      <div class="flex gap-12 items-center">
-        <BasicTooltip v-if="lastStatusMessage && deviceStatus === 'online'">
-          <Wifi v-if="lastStatusMessage.rssi >= -50" class="w-16 h-16" />
-          <WifiHigh
-            v-else-if="
-              lastStatusMessage.rssi < -50 && lastStatusMessage.rssi >= -65
-            "
-            class="w-16 h-16"
-          />
-          <WifiLow
-            v-else-if="
-              lastStatusMessage.rssi < -65 && lastStatusMessage.rssi >= -75
-            "
-            class="w-16 h-16"
-          />
-          <WifiZero v-else class="w-16 h-16" />
-          <template #tooltipText>
-            <div class="flex gap-6">
-              <span>{{ lastStatusMessage.wifi }}</span>
-              |
-              <span>RSSI: {{ lastStatusMessage.rssi }} dBm</span>
-            </div>
-          </template>
-        </BasicTooltip>
-        <BasicTooltip :tooltipText="t(`common.status.${deviceStatus}`)">
-          <div class="w-12 h-12 rounded-full" :class="statusColor"></div>
-        </BasicTooltip>
+    <div class="mx-16">
+      <div class="flex justify-between gap-10">
+        <h2>{{ props.name }}</h2>
+        <div class="flex gap-12 items-center">
+          <BasicTooltip v-if="lastStatusMessage && deviceStatus === 'online'">
+            <component
+              :is="
+                lastStatusMessage.rssi >= -50
+                  ? Wifi
+                  : lastStatusMessage.rssi < -50 &&
+                    lastStatusMessage.rssi >= -65
+                  ? WifiHigh
+                  : lastStatusMessage.rssi < -65 &&
+                    lastStatusMessage.rssi >= -75
+                  ? WifiLow
+                  : WifiZero
+              "
+              class="w-16 h-16"
+            />
+
+            <template #tooltipText>
+              <div class="flex gap-6">
+                <span>{{ lastStatusMessage.wifi }}</span>
+                |
+                <span>RSSI: {{ lastStatusMessage.rssi }} dBm</span>
+              </div>
+            </template>
+          </BasicTooltip>
+          <BasicTooltip :tooltipText="t(`common.status.${deviceStatus}`)">
+            <div class="w-12 h-12 rounded-full" :class="statusColor"></div>
+          </BasicTooltip>
+        </div>
+      </div>
+      <div class="text-10">
+        <span> #{{ props.id }} </span>
       </div>
     </div>
-    <span class="text-10">#{{ props.id }}</span>
 
-    <div class="flex justify-between gap-12 text-12">
-      <SectionsDevicesComponentsWiFiScanList
+    <div class="flex-grow overflow-hidden text-12">
+      <div
+        v-if="content === 'overview'"
+        class="flex justify-between gap-12 h-full px-16"
+      >
+        <SectionsDevicesComponentsWiFiScanList
+          :wiFiScanMessages="wifiScanMessages"
+          :deviceStatus="deviceStatus"
+          :connectedWiFi="lastStatusMessage?.wifi || ''"
+          class="w-1/2"
+          @getWifiScan="emit('getWifiScan')"
+        />
+        <SectionsDevicesComponentsGpioList
+          :gpioStateMessages="gpioMessages"
+          :deviceStatus="deviceStatus"
+          class="w-1/2"
+          @getGpioStates="emit('getGpioStates')"
+          @setGpioPin="(params) => emit('setGpioPin', params)"
+        />
+      </div>
+
+      <SectionsDevicesComponentsWiFiHistory
         :wiFiScanMessages="wifiScanMessages"
-        :deviceStatus="deviceStatus"
-        :connectedWiFi="lastStatusMessage?.wifi || ''"
-        class="w-1/2"
-        @getWifiScan="emit('getWifiScan')"
+        v-else-if="content === 'wifi'"
+        class="h-full"
       />
-      <SectionsDevicesComponentsGpioList
-        :gpioStateMessages="gpioMessages"
-        :deviceStatus="deviceStatus"
-        class="w-1/2"
-        @getGpioStates="emit('getGpioStates')"
-        @setGpioPin="(params) => emit('setGpioPin', params)"
-      />
+    </div>
+
+    <div class="mt-auto">
+      <button
+        v-for="tab in tabs"
+        :key="tab.value"
+        @click="content = tab.value"
+        :style="'width: ' + 100 / tabs.length + '%;'"
+        class="py-4 text-12"
+        :class="{
+          'border-t border-primary': content === tab.value,
+          'text-gray-500': content !== tab.value,
+        }"
+      >
+        {{ tab.label }}
+      </button>
     </div>
   </div>
 </template>

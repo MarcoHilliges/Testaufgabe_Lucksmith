@@ -74,16 +74,13 @@ watch(
           :key="index"
         >
           <BasicTooltip class="flex gap-12">
-            <Wifi v-if="wifi.rssi >= -50" class="w-16 h-16" />
-            <WifiHigh
-              v-else-if="wifi.rssi < -50 && wifi.rssi >= -65"
-              class="w-16 h-16"
-            />
-            <WifiLow
-              v-else-if="wifi.rssi < -65 && wifi.rssi >= -75"
-              class="w-16 h-16"
-            />
-            <WifiZero v-else class="w-16 h-16" />
+            <component :is="
+              wifi.rssi >= -50 ? Wifi :
+              wifi.rssi < -50 && wifi.rssi >= -65 ? WifiHigh :
+              wifi.rssi < -65 && wifi.rssi >= -75 ? WifiLow :
+              WifiZero
+            " class="w-16 h-16" />
+
             <div class="truncate">
               {{ wifi.ssid }}
               <span

@@ -1,0 +1,8 @@
+{
+  "tabs": {
+    "overview": "Übersicht",
+    "wifi": "WLAN",
+    "gpio": "GPIO",
+    "settings": "Einstellungen"
+  }
+}
