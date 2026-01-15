@@ -30,13 +30,100 @@ String topic_wifi_get_sub;        // Topic zum Abonnieren von Anfragen für WiFi
 String topic_gpio_state_pub;      // Topic zum Veröffentlichen des aktuellen GPIO-Status
 String topic_gpio_get_sub;        // Topic zum Abonnieren von Anfragen für den GPIO-Status
 String topic_gpio_set_sub;        // Topic zum Abonnieren von Befehlen zur GPIO-Steuerung
+String topic_settings_get_sub;    // Topic zum Abonnieren von Anfragen für die Einstellungen
+String topic_settings_pub;        // Topic zum Veröffentlichen der Einstellungen
+String topic_settings_set_sub;    // Topic zum Abonnieren von Befehlen zur Einstellung der Geräteeinstellungen
 
 // Globale Variablen für den nicht-blockierenden Scan
+String currentDeviceName = BASE_DEVICE_NAME; // Beispiel: Kann geändert werden
 bool wifiScanning = false;        // Flag, ob ein WiFi-Scan läuft
+
+// ----------------------------------------
+// Timer für periodische Aufgaben
+// Verwendet millis() für nicht-blockierende Zeitintervalle
+// ----------------------------------------
+long lastHeartbeatTime = 0;       // Zeitpunkt des letzten Heartbeats
+const long heartbeatInterval = 30000; // Intervall für Heartbeats (30 Sekunden)
+
+long lastWifiScanTime = 0;        // Zeitpunkt des letzten WiFi-Scans
+long wifiScanInterval = 60000;  // Intervall für WiFi-Scans (60 Sekunden)
 
 // Instanzen für die WLAN- und MQTT-Kommunikation
 WiFiClient espClient;             // Der TCP-Client, der die WLAN-Verbindung verwaltet
 PubSubClient client(espClient);   // Der MQTT-Client, der über espClient kommuniziert
+
+// ----------------------------------------
+// Funktion: sendDeviceSettings
+// Sendet die aktuellen Geräteeinstellungen als JSON an topic_settings_pub.
+// ----------------------------------------
+void sendDeviceSettings() {
+  DynamicJsonDocument doc(512); // Ausreichend für ein paar Einstellungen
+
+  doc["deviceName"] = currentDeviceName;
+  doc["wifiScanInterval"] = wifiScanInterval; // Der aktuell aktive Wert
+
+  String payload;
+  serializeJson(doc, payload);
+
+  Serial.print("Sende Geräteeinstellungen: ");
+  Serial.println(payload);
+
+  if (client.connected()) {
+    client.publish(topic_settings_pub.c_str(), payload.c_str());
+  } else {
+    Serial.println("MQTT Client ist NICHT verbunden, Einstellungen nicht gesendet.");
+  }
+}
+
+// ----------------------------------------
+// Funktion: updateDeviceSettings
+// Aktualisiert Geräteeinstellungen basierend auf einer JSON-Nachricht.
+// Speichert die Änderungen und sendet den aktualisierten Zustand zurück.
+// ----------------------------------------
+void updateDeviceSettings(String payloadString) {
+  DynamicJsonDocument doc(512);
+
+  DeserializationError error = deserializeJson(doc, payloadString);
+
+  if (error) {
+    Serial.print(F("JSON-Parsing für Settings fehlgeschlagen: "));
+    Serial.println(error.f_str());
+    return;
+  }
+
+  bool settingsChanged = false;
+
+  // Beispiel: deviceName ändern
+  if (doc.containsKey("deviceName")) {
+    String newName = doc["deviceName"].as<String>();
+    if (newName != currentDeviceName) {
+      currentDeviceName = newName;
+      Serial.print("Gerätename aktualisiert zu: "); Serial.println(currentDeviceName);
+      settingsChanged = true;
+      // WICHTIG: Wenn der Gerätename Teil der DeviceID ist, muss sich auch die DeviceID ändern
+      // und damit alle Topics. Dies ist komplexer und würde einen Reconnect erfordern.
+      // Für diese Aufgabe konzentrieren wir uns auf den Display-Namen.
+    }
+  }
+
+    if (doc.containsKey("wifiScanInterval")) {
+    long newInterval = doc["wifiScanInterval"].as<long>();
+    // Intervall muss mindestens 5 Sekunden sein und muss sich vom aktuellen Wert unterscheiden
+    if (newInterval > 5000 && newInterval != wifiScanInterval) { 
+      wifiScanInterval = newInterval; // Aktualisiere den globalen Timer für den nächsten Scan
+      Serial.print("WiFi Scan Intervall aktualisiert zu: "); Serial.println(wifiScanInterval);
+      settingsChanged = true;
+    } else {
+      Serial.print("Ungültiges oder unverändertes WiFi Scan Intervall: "); Serial.println(newInterval);
+    }
+  }
+
+  // Nach der Aktualisierung die neuen Einstellungen zurücksenden,
+  // damit das Frontend weiß, dass die Änderung übernommen wurde.
+  if (settingsChanged) {
+    sendDeviceSettings();
+  }
+}
 
 // ----------------------------------------
 // GPIO-Steuerung und Definitionen
@@ -56,17 +143,6 @@ int gpio_states[4] = {LOW, LOW, LOW, LOW};
 int control_pins[] = {LED_PIN, RELAY_PIN_1, RELAY_PIN_2, SENSOR_GPIO};
 // Anzahl der definierten Pins
 const int NUM_PINS = sizeof(control_pins) / sizeof(control_pins[0]);
-
-
-// ----------------------------------------
-// Timer für periodische Aufgaben
-// Verwendet millis() für nicht-blockierende Zeitintervalle
-// ----------------------------------------
-long lastHeartbeatTime = 0;       // Zeitpunkt des letzten Heartbeats
-const long heartbeatInterval = 30000; // Intervall für Heartbeats (30 Sekunden)
-
-long lastWifiScanTime = 0;        // Zeitpunkt des letzten WiFi-Scans
-const long wifiScanInterval = 60000;  // Intervall für WiFi-Scans (60 Sekunden)
 
 // ----------------------------------------
 // Funktion: MQTT Callback
@@ -157,6 +233,15 @@ void callback(char* topic, byte* payload, unsigned int length) {
     Serial.println("Anfrage empfangen auf /gpio/get Topic. Sende GPIO-Zustände...");
     reportGpioStates(); // Sende den aktuellen Status aller GPIOs
   }
+  else if (String(topic) == topic_settings_get_sub) {
+    Serial.println("Anfrage empfangen auf /settings/get Topic. Sende aktuelle Einstellungen...");
+    sendDeviceSettings(); // Funktion zum Senden der aktuellen Einstellungen
+  }
+  // NEU: 6. Wenn ein Befehl zur Einstellung der Geräte-Settings empfangen wird
+  else if (String(topic) == topic_settings_set_sub) {
+    Serial.println("Befehl empfangen auf /settings/set Topic. Aktualisiere Einstellungen...");
+    updateDeviceSettings(payloadString); // Funktion zum Aktualisieren der Einstellungen
+  }
   // Für alle anderen Topics, die abonniert sind, aber nicht explizit behandelt werden
   else {
     Serial.print("Unbehandeltes Topic: ");
@@ -225,6 +310,8 @@ void reconnect_mqtt() {
       client.subscribe(topic_status_get_sub.c_str());   // Abonnieren für Status-Anfragen
       client.subscribe(topic_wifi_get_sub.c_str());     // Abonnieren für WiFi-Scan-Anfragen
       client.subscribe(topic_gpio_get_sub.c_str());     // Abonnieren für GPIO-Status-Anfragen
+      client.subscribe(topic_settings_get_sub.c_str()); // Abonnieren für Settings-Anfragen
+      client.subscribe(topic_settings_set_sub.c_str()); // Abonnieren für Setting-Änderungsbefehle
 
       // Initialen GPIO-Status senden (für Dashboard-Initialisierung)
       reportGpioStates();
@@ -417,6 +504,10 @@ void setup() {
   topic_status_get_sub = "esp32/" + deviceId + "/status/get";
   topic_wifi_get_sub = "esp32/" + deviceId + "/wifi/get";
   topic_gpio_get_sub = "esp32/" + deviceId + "/gpio/get";
+  // Topics für Geräteeinstellungen
+  topic_settings_get_sub = "esp32/" + deviceId + "/settings/get";
+  topic_settings_pub = "esp32/" + deviceId + "/settings";
+  topic_settings_set_sub = "esp32/" + deviceId + "/settings/set";
 
   // Debug-Ausgabe der generierten Topics zur Überprüfung
   Serial.print("MQTT Topic Heartbeat: "); Serial.println(topic_status_pub);
@@ -426,6 +517,9 @@ void setup() {
   Serial.print("MQTT Topic Status Get (Sub): "); Serial.println(topic_status_get_sub);
   Serial.print("MQTT Topic WiFi Get (Sub): "); Serial.println(topic_wifi_get_sub);
   Serial.print("MQTT Topic GPIO Get (Sub): "); Serial.println(topic_gpio_get_sub);
+  Serial.print("MQTT Topic Settings Get (Sub): "); Serial.println(topic_settings_get_sub);
+  Serial.print("MQTT Topic Settings Publish: "); Serial.println(topic_settings_pub);
+  Serial.print("MQTT Topic Settings Set (Sub): "); Serial.println(topic_settings_set_sub);
   // --- Ende Topics Initialisierung ---
 
 
