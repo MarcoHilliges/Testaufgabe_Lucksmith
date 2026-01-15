@@ -1,4 +1,8 @@
-export type MqttClientState = 'connected' | 'disconnected' | 'error' | 'reconnecting';
+export type MqttClientState =
+  | "connected"
+  | "disconnected"
+  | "error"
+  | "reconnecting";
 
 export type DeviceStatus = "online" | "error" | "offline";
 
@@ -6,6 +10,7 @@ export enum MessageTopic {
   STATUS = "status",
   WIFI = "wifi",
   GPIO = "gpio",
+  SETTINGS = "settings",
 }
 
 export enum StatusSubTopic {
@@ -68,6 +73,11 @@ export interface GPIOStateMessage {
   timestamp: number;
 }
 
+export interface SettingsMessage {
+  deviceName: string;
+  wifiScanInterval: number;
+}
+
 export type DeviceMessage =
   | {
       topic: MessageTopic.STATUS;
@@ -80,6 +90,10 @@ export type DeviceMessage =
   | {
       topic: MessageTopic.GPIO;
       messages: GPIOStateMessage[];
+    }
+  | {
+      topic: MessageTopic.SETTINGS;
+      messages: SettingsMessage;
     };
 
 export interface Device {

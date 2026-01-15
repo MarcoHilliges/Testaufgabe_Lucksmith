@@ -39,6 +39,21 @@ const settingsItems = ref<SettingsItem[]>([
 const isLoadingSettings = ref(false);
 
 onMounted(() => {
+  $mqtt.on("message", (topic, message) => {
+    console.log("Received MQTT message on topic:", topic);
+    console.log("Message payload:", message.toString());
+    const deviceIdAndName = topic.split("/")[1]; // Extrahiere die Geräte-ID aus dem Topic
+
+    const last_dash_index = deviceIdAndName?.lastIndexOf("-");
+    if (!last_dash_index || !deviceIdAndName) return;
+    const deviceName = deviceIdAndName.substring(0, last_dash_index);
+    const deviceId = deviceIdAndName.substring(last_dash_index + 1);
+
+    if (deviceId !== props.deviceId) return;
+    console.log("message received", JSON.parse(message.toString()));
+    const messageData = JSON.parse(message.toString());
+    
+  });
   getSettings();
 });
 
@@ -50,7 +65,12 @@ function getSettings() {
 
 <template>
   <div class="relative">
-    <ul class="overflow-y-auto" :class="{ 'opacity-70': isLoadingSettings || props.deviceStatus === 'offline' }">
+    <ul
+      class="overflow-y-auto"
+      :class="{
+        'opacity-70': isLoadingSettings || props.deviceStatus === 'offline',
+      }"
+    >
       <li
         v-for="item in settingsItems"
         :key="item.key"

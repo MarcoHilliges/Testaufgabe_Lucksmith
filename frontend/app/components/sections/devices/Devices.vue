@@ -132,6 +132,9 @@ onMounted(() => {
         }
         break;
 
+      case MessageTopic.SETTINGS:
+        break;
+
       default:
         console.warn("Unknown topic type:", topicType);
     }
@@ -187,7 +190,7 @@ function loadDataFromLocalStorage() {
   <div id="devices" class="mt-[92px] flex flex-col items-center">
     <div class="w-full flex flex-wrap justify-center">
       <template
-        v-for="device in [...devices, ...devices, ...devices, ...devices]"
+        v-for="device in devices"
         :key="device.id"
       >
         <ESP32
