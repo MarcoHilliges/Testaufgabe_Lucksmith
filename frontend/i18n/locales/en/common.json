@@ -6,6 +6,7 @@
   "data-protection": "Data Protection",
   "devices": "Devices",
   "imprint": "Imprint",
+  "lastUpdate": "Last update",
   "mqttClientState": {
     "connected": "Connected",
     "disconnected": "Disconnected",

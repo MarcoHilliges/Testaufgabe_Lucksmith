@@ -174,6 +174,15 @@ watch(
         v-else-if="content === 'wifi'"
         class="h-full"
       />
+
+      <SectionsDevicesComponentsGpioDetailList
+        v-else-if="content === 'gpio'"
+        :gpioStateMessages="gpioMessages"
+        :deviceStatus="deviceStatus"
+        class="h-full"
+        @getGpioStates="emit('getGpioStates')"
+        @setGpioPin="(params) => emit('setGpioPin', params)"
+      />
     </div>
 
     <div class="mt-auto">

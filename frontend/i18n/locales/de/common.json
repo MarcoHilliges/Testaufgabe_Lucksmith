@@ -6,6 +6,7 @@
   "data-protection": "Datenschutz",
   "devices": "Geräte",
   "imprint": "Impressum",
+  "lastUpdate": "Letzt Aktualisierung",
   "mqttClientState": {
     "connected": "Verbunden",
     "disconnected": "Verbindung getrennt",
