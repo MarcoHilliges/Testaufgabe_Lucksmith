@@ -35,7 +35,7 @@ String topic_settings_pub;        // Topic zum Veröffentlichen der Einstellunge
 String topic_settings_set_sub;    // Topic zum Abonnieren von Befehlen zur Einstellung der Geräteeinstellungen
 
 // Globale Variablen für den nicht-blockierenden Scan
-String currentDeviceName = BASE_DEVICE_NAME; // Beispiel: Kann geändert werden
+// String currentDeviceName = BASE_DEVICE_NAME; // TODO: add this later | Gerätenamen anpassen
 bool wifiScanning = false;        // Flag, ob ein WiFi-Scan läuft
 
 // ----------------------------------------
@@ -59,7 +59,7 @@ PubSubClient client(espClient);   // Der MQTT-Client, der über espClient kommun
 void sendDeviceSettings() {
   DynamicJsonDocument doc(512); // Ausreichend für ein paar Einstellungen
 
-  doc["deviceName"] = currentDeviceName;
+  // doc["deviceName"] = currentDeviceName; // TODO: add this later | Gerätenamen anpassen
   doc["wifiScanInterval"] = wifiScanInterval; // Der aktuell aktive Wert
 
   String payload;
@@ -93,20 +93,17 @@ void updateDeviceSettings(String payloadString) {
 
   bool settingsChanged = false;
 
-  // Beispiel: deviceName ändern
-  if (doc.containsKey("deviceName")) {
-    String newName = doc["deviceName"].as<String>();
-    if (newName != currentDeviceName) {
-      currentDeviceName = newName;
-      Serial.print("Gerätename aktualisiert zu: "); Serial.println(currentDeviceName);
-      settingsChanged = true;
-      // WICHTIG: Wenn der Gerätename Teil der DeviceID ist, muss sich auch die DeviceID ändern
-      // und damit alle Topics. Dies ist komplexer und würde einen Reconnect erfordern.
-      // Für diese Aufgabe konzentrieren wir uns auf den Display-Namen.
-    }
-  }
+  // TODO: add this later | Gerätenamen anpassen
+  // if (doc.containsKey("deviceName")) {
+  //   String newName = doc["deviceName"].as<String>();
+  //   if (newName != currentDeviceName) {
+  //     currentDeviceName = newName;
+  //     Serial.print("Gerätename aktualisiert zu: "); Serial.println(currentDeviceName);
+  //     settingsChanged = true;
+  //   }
+  // }
 
-    if (doc.containsKey("wifiScanInterval")) {
+  if (doc.containsKey("wifiScanInterval")) {
     long newInterval = doc["wifiScanInterval"].as<long>();
     // Intervall muss mindestens 5 Sekunden sein und muss sich vom aktuellen Wert unterscheiden
     if (newInterval > 5000 && newInterval != wifiScanInterval) { 
