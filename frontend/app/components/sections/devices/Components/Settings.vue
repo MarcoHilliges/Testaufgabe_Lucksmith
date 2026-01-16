@@ -143,7 +143,7 @@ function saveChanges() {
         <BasicTooltip :tooltipText="item.description">
           <Info class="w-14 h-14 text-gray-500" />
         </BasicTooltip>
-        <span>({{ t("common.commingSoon") }})</span>
+        <span v-if="item.inactive">({{ t("common.commingSoon") }})</span>
         <input
           v-model="item.value"
           :type="item.valueType"
