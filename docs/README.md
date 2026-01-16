@@ -62,7 +62,7 @@
     - Visual Studio Code
     - Arduino IDE
 
-5. ## Installation & Setup
+## 5. Installation & Setup
 <details>
 <summary>Installation & Setup</summary>
 
