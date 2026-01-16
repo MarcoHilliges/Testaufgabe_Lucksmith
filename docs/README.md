@@ -183,9 +183,7 @@
 <details>
 <summary>Ordnerstruktur des Repositorys</summary>
 
-    ```
-    text
-    Copy
+    ``` text
     ├── docker/
     │   ├── docker-compose.yml
     │   ├── config/
