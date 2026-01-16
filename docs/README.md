@@ -183,7 +183,6 @@
 <details>
 <summary>Ordnerstruktur des Repositorys</summary>
 
-    ``` text
     ├── docker/
     │   ├── docker-compose.yml
     │   ├── config/
@@ -221,7 +220,6 @@
         ├── README.md
         ├── tailwind.config.ts
         └── tsconfig.ts
-    ```
 
 </details>
 
