@@ -11,6 +11,7 @@
   "imprint": "Impressum",
   "lastUpdate": "Letzt Aktualisierung",
   "mqttClientState": {
+    "title": "Client Status",
     "connected": "Verbunden",
     "disconnected": "Verbindung getrennt",
     "error": "Verbindungsfehler (Konsole!)",

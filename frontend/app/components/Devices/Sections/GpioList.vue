@@ -31,6 +31,27 @@ const formatedLastGpioStateTimestamp = computed(() => {
 const isLoadingGpioStates = ref<null | GPIOPin | -1>(null);
 const gpioPinStates = ref<Record<GPIOPin, GPIOPinState> | null>(null);
 
+let intervalGetGpioStates: NodeJS.Timeout | null = null;
+
+function getGpioStates() {
+  emit("getGpioStates");
+}
+
+function startGettingGpioStates() {
+  if (!intervalGetGpioStates) {
+    isLoadingGpioStates.value = -1;
+    intervalGetGpioStates = setInterval(getGpioStates, 5000);
+  }
+}
+
+function stopGettingGpioStates() {
+  if (intervalGetGpioStates) {
+    clearInterval(intervalGetGpioStates);
+  }
+  intervalGetGpioStates = null;
+  isLoadingGpioStates.value = null;
+}
+
 function setGpioPinState(pin: GPIOPin, value: GPIOPinState) {
   if (isLoadingGpioStates.value) return;
   isLoadingGpioStates.value = pin;
@@ -58,7 +79,7 @@ watch(
       });
     }
 
-    isLoadingGpioStates.value = null;
+    stopGettingGpioStates();
   },
   { immediate: true },
 );
@@ -71,8 +92,7 @@ watch(
       (lastGpioStatesMessage.value === null ||
         Date.now() - (lastGpioStatesMessage.value?.timestamp || 60000) > 45000)
     ) {
-      isLoadingGpioStates.value = -1;
-      emit("getGpioStates");
+      startGettingGpioStates();
     }
   },
   { immediate: true },
@@ -84,6 +104,11 @@ function formatTimestamp(timestamp: number | undefined | null) {
   const date = new Date(timestamp);
   return date.toLocaleString();
 }
+
+// Lifecycle
+onBeforeUnmount(() => {
+  stopGettingGpioStates();
+});
 </script>
 
 <template>

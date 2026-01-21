@@ -3,6 +3,7 @@ const { t } = useI18n();
 
 const { $mqttConnectionState } = useNuxtApp();
 const mqttClientState = $mqttConnectionState;
+const toast = useToast();
 
 const connectionStateText = computed(() => {
   switch (mqttClientState.value) {
@@ -33,6 +34,38 @@ const connectionStateColor = computed(() => {
       return "bg-gray-500";
   }
 });
+
+watch(
+  () => mqttClientState.value,
+  (newValue) => {
+    console.log(newValue);
+    switch (newValue) {
+      case "connected":
+        toast.success({
+          title: t("common.mqttClientState.title"),
+          message: t(`common.mqttClientState.${newValue}`),
+        });
+        break;
+      case "error":
+        toast.error({
+          title: t("common.mqttClientState.title"),
+          message: t(`common.mqttClientState.${newValue}`),
+        });
+        break;
+      case "disconnected":
+        toast.info({
+          title: t("common.mqttClientState.title"),
+          message: t(`common.mqttClientState.${newValue}`),
+        });
+        break;
+      case "reconnecting":
+        toast.info({
+          title: t("common.mqttClientState.title"),
+          message: t(`common.mqttClientState.${newValue}`),
+        });
+    }
+  },
+);
 </script>
 
 <template>

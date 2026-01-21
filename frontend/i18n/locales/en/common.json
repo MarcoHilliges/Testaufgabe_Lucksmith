@@ -11,6 +11,7 @@
   "imprint": "Imprint",
   "lastUpdate": "Last update",
   "mqttClientState": {
+    "title": "Client status",
     "connected": "Connected",
     "disconnected": "Disconnected",
     "error": "Connection error (Console!)",
