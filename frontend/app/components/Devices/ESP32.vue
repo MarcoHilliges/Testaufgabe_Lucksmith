@@ -102,7 +102,7 @@ watch(
       emit("getStatus");
     }
   },
-  { immediate: true }
+  { immediate: true },
 );
 </script>
 
@@ -120,12 +120,12 @@ watch(
                 lastStatusMessage.rssi >= -50
                   ? Wifi
                   : lastStatusMessage.rssi < -50 &&
-                    lastStatusMessage.rssi >= -65
-                  ? WifiHigh
-                  : lastStatusMessage.rssi < -65 &&
-                    lastStatusMessage.rssi >= -75
-                  ? WifiLow
-                  : WifiZero
+                      lastStatusMessage.rssi >= -65
+                    ? WifiHigh
+                    : lastStatusMessage.rssi < -65 &&
+                        lastStatusMessage.rssi >= -75
+                      ? WifiLow
+                      : WifiZero
               "
               class="w-16 h-16"
             />
@@ -161,6 +161,7 @@ watch(
           @getWifiScan="emit('getWifiScan')"
         />
         <DevicesSectionsGpioList
+          :deviceName="props.name"
           :gpioStateMessages="gpioMessages"
           :deviceStatus="deviceStatus"
           class="w-1/2"
@@ -176,6 +177,7 @@ watch(
 
       <DevicesSectionsGpioDetailList
         v-else-if="content === 'gpio'"
+        :deviceName="props.name"
         :gpioStateMessages="gpioMessages"
         :deviceStatus="deviceStatus"
         @getGpioStates="emit('getGpioStates')"

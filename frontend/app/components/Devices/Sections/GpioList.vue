@@ -7,6 +7,7 @@ const emit = defineEmits<{
 }>();
 
 const props = defineProps<{
+  deviceName: string;
   gpioStateMessages: GPIOStateMessage[];
   deviceStatus: string;
 }>();
@@ -14,6 +15,7 @@ const props = defineProps<{
 const toast = useToast();
 const { t } = useI18n();
 
+// TODO: Funktionalität zusammenfügen und auslagern => useDeviceGpioControl()
 const lastGpioStatesMessage = computed(() => {
   return props.gpioStateMessages?.[0] || null;
 });
@@ -47,7 +49,8 @@ watch(
       console.log(gpioPinStates.value?.[isLoadingGpioStates.value]);
       toast.success({
         message: t("device.setGpio.successText", {
-          name: 'PIN ' + isLoadingGpioStates.value,
+          deviceName: props.deviceName,
+          pinName: "PIN " + isLoadingGpioStates.value,
           state: gpioPinStates.value?.[isLoadingGpioStates.value]
             ? t("common.activated")
             : t("common.deactivated"),

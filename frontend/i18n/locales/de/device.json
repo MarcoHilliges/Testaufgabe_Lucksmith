@@ -1,7 +1,7 @@
 {
   "deviceIsOffline": "Gerät ist offline",
   "setGpio": {
-    "successText": "{name} {state}"
+    "successText": "{deviceName}: {pinName} {state}"
   },
   "settings": {
     "deviceName": "Gerätename",
