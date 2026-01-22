@@ -9,10 +9,10 @@
 
     ```mermaid
     graph TD;
-        ESP32 (Mikrocontroller)-->RabbitMQ (Docker) + MQTT/WebMQTT Plugin;
-        RabbitMQ (Docker) + MQTT/WebMQTT Plugin-->ESP32 (Mikrocontroller);
-        RabbitMQ (Docker) + MQTT/WebMQTT Plugin-->Nuxt 4 App (Dashboard);
-        Nuxt 4 App (Dashboard)-->RabbitMQ (Docker) + MQTT/WebMQTT Plugin;
+        A[ESP32 / Mikrocontroller]-->B[RabbitMQ / Docker + MQTT/WebMQTT Plugin];
+        B-->A;
+        B-->C[Nuxt 4 App / Dashboard];
+        C-->B;
     ```
 
 * **Komponenten:**
