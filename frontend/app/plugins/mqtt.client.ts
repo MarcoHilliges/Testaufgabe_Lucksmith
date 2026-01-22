@@ -1,5 +1,5 @@
-import mqtt from 'mqtt' 
-import type { MqttClientState } from '~/models/message';
+import mqtt from 'mqtt'
+import type { MqttClientState } from '~/models/mqtt';
 
 export default defineNuxtPlugin(nuxtApp => {
   const config = useRuntimeConfig();

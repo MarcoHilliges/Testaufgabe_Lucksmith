@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { WifiZero, WifiLow, WifiHigh, Wifi } from "lucide-vue-next";
-import type { DeviceStatus, WifiScanMessage } from "~/models/message";
+import type { DeviceStatus } from "~/models/device";
+import type { WifiScanMessage } from "~/models/message";
 
 const emit = defineEmits<{
   getWifiScan: [];

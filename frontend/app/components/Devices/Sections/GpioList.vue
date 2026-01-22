@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import type { GPIOPin, GPIOPinState, GPIOStateMessage } from "~/models/message";
+import type { GPIOPin, GPIOPinState } from "~/models/device";
+import type { GPIOStateMessage } from "~/models/message";
 
 const emit = defineEmits<{
   setGpioPin: [{ pin: GPIOPin; value: GPIOPinState }];

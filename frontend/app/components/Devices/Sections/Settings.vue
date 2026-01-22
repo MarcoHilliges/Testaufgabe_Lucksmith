@@ -1,10 +1,10 @@
 <script setup lang="ts">
 import {
   MessageTopic,
-  type DeviceStatus,
   type SettingsMessage,
 } from "~/models/message";
 import { Info } from "lucide-vue-next";
+import type { DeviceStatus } from "~/models/device";
 
 interface SettingsItem {
   key: keyof SettingsMessage;

@@ -1,8 +1,6 @@
 <script setup lang="ts">
+import type { DeviceStatus, GPIOPin, GPIOPinState } from "~/models/device";
 import type {
-  DeviceStatus,
-  GPIOPin,
-  GPIOPinState,
   GPIOStateMessage,
 } from "~/models/message";
 

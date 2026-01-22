@@ -1,13 +1,12 @@
 <script setup lang="ts">
 import { WifiZero, WifiLow, WifiHigh, Wifi } from "lucide-vue-next";
+import type { GPIOPin, GPIOPinState } from "~/models/device";
 import {
-  GPIOPin,
-  GPIOPinState,
   MessageTopic,
   WifiSubTopic,
   type DeviceMessage,
-  type MqttClientState,
 } from "~/models/message";
+import type { MqttClientState } from "~/models/mqtt";
 
 type ContentTab = "overview" | "wifi" | "gpio" | "settings";
 

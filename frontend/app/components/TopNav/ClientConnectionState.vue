@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import type { MqttClientState } from "~/models/message";
+import type { MqttClientState } from '~/models/mqtt';
+
 
 const { t } = useI18n();
 

@@ -1,15 +1,13 @@
 <script lang="ts" setup>
 import {
-  GPIOPin,
-  GPIOPinState,
   GPIOSubTopic,
   MessageTopic,
   WifiSubTopic,
-  type Device,
   type StatusMessage,
   type WifiScanMessage,
 } from "~/models/message";
 import ESP32 from "./ESP32.vue";
+import type { GPIOPin, GPIOPinState } from "~/models/device";
 
 const { $mqtt, $mqttConnectionState } = useNuxtApp();
 

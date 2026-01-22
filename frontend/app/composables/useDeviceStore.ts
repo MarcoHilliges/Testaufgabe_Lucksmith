@@ -1,6 +1,6 @@
+import type { Device } from "~/models/device";
 import {
   MessageTopic,
-  type Device,
   type GPIOStateMessage,
   type StatusMessage,
   type WifiScanMessage,

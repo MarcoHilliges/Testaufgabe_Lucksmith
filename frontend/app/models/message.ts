@@ -1,10 +1,4 @@
-export type MqttClientState =
-  | "connected"
-  | "disconnected"
-  | "error"
-  | "reconnecting";
-
-export type DeviceStatus = "online" | "error" | "offline";
+import type { DeviceStatus, GPIOPin, GPIOPinState, WLANNetwork } from "./device";
 
 export enum MessageTopic {
   STATUS = "status",
@@ -27,26 +21,6 @@ export enum GPIOSubTopic {
   GET = "get",
 }
 
-export enum GPIOPin {
-  PIN_2 = 2,
-  PIN_4 = 4,
-  PIN_16 = 16,
-  PIN_17 = 17,
-  PIN_18 = 18,
-  PIN_19 = 19,
-  PIN_21 = 21,
-  PIN_22 = 22,
-  PIN_23 = 23,
-  PIN_25 = 25,
-  PIN_26 = 26,
-  PIN_27 = 27,
-}
-
-export enum GPIOPinState {
-  LOW = 0,
-  HIGH = 1,
-}
-
 export interface StatusMessage {
   status: DeviceStatus;
   wifi: string;
@@ -57,11 +31,7 @@ export interface StatusMessage {
   gpioStates: Record<GPIOPin, GPIOPinState>;
 }
 
-export interface WLANNetwork {
-  ssid: string;
-  rssi: number;
-  encryption: number;
-}
+
 
 export interface WifiScanMessage {
   supTopic: WifiSubTopic.SCAN;
@@ -97,10 +67,3 @@ export type DeviceMessage =
       topic: MessageTopic.SETTINGS;
       messages: SettingsMessage;
     };
-
-export interface Device {
-  id: string;
-  name: string;
-  lastSeen: number | null;
-  messages: DeviceMessage[];
-}
