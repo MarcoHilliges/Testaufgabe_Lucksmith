@@ -1,6 +1,5 @@
 <script setup lang="ts">
-import type { MqttClientState } from '~/models/mqtt';
-
+import type { MqttClientState } from "~/models/mqtt";
 
 const { t } = useI18n();
 
@@ -73,7 +72,10 @@ watch(
   },
 );
 
-onMounted(() => showMqttClientState(mqttClientState.value));
+onMounted(() => {
+  // Verhindert doppelte Nachricht
+  setTimeout(() => showMqttClientState(mqttClientState.value), 100);
+});
 </script>
 
 <template>
