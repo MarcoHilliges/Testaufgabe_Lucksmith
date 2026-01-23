@@ -31,7 +31,7 @@
     - GPIO-Steuerung über MQTT (JSON-Input).
     - GPIO-Status-Reporting (JSON-Output).
     - Anfrage-basierte Übermittlung aller Daten.
-    - Einstellungsverwaltung (Abrufen und Setzen von wifiUpdateInterval).
+    - Einstellungsverwaltung mit dauerhafter Speicherung (LittleFS).
 
 * **Nuxt 4 Frontend:**
     - Responsives Design (Tailwind CSS).
@@ -200,9 +200,11 @@
     │   └── README.md
     ├── esp32/
     │   ├── src/
+    │   │   ├── littlefs_settings.h
     │   │   ├── main.cpp
     │   │   ├── secrets.h
-    │   │   └── secrets.h.example
+    │   │   ├── secrets.h.example
+    │   │   └── settings.json
     │   ├── .gitignore
     │   └── platformio.ini
     └── frontend/
