@@ -61,6 +61,7 @@
 * **ESP32 Firmware:**
     - Arduino Framework (C++)
     - JSON-Parsing (ESP32): ArduinoJson v7.4.2
+    - Flash-Speicher: LittleFS für ESP32 v1.0.6
 
 * **Containerisierung:**
     - Docker & Docker Compose
