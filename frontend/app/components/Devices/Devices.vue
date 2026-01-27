@@ -7,7 +7,14 @@ import {
   type WifiScanMessage,
 } from "~/models/message";
 import ESP32 from "./ESP32.vue";
-import type { Device, GPIOPin, GPIOPinState, SetGPIO } from "~/models/device";
+import type {
+  Device,
+  GPIO,
+  GPIOGroupId,
+  GPIOPin,
+  GPIOPinState,
+  SetGPIO,
+} from "~/models/device";
 
 const { $mqtt, $mqttConnectionState } = useNuxtApp();
 
@@ -134,17 +141,35 @@ function loadDataFromStorage() {
   }
 }
 
+interface GPIOGroup {
+  groupId: GPIOGroupId;
+  gpios: GPIO[];
+}
+
 const gpioGroups = computed(() => {
   const gpios = devices.value.flatMap((device) => device.gpios);
- 
-  return gpios;
+  const groups: GPIOGroup[] = [];
+  gpios.forEach((gpio) => {
+    if (!gpio.group) gpio.group = "none";
+    let group = groups.find((g) => g.groupId === gpio.group);
+    if (!group) {
+      group = { groupId: gpio.group, gpios: [] };
+      groups.push(group);
+    }
+    group.gpios.push(gpio);
+  });
+
+  return groups;
 });
 </script>
 
 <template>
   <div class="mt-[92px] flex flex-col items-center">
     <div class="w-full flex flex-wrap justify-center">
-      <!-- <pre>{{ gpioGroups }}</pre> -->
+      <template v-for="(gpio, index) in gpioGroups" :key="index">
+        <pre>{{ gpio }}</pre>
+      </template>
+
       <template v-for="device in devices" :key="device.id">
         <ESP32
           :device="device"

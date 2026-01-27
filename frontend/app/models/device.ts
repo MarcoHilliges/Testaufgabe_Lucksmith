@@ -7,11 +7,11 @@ export enum GPIOPinState {
   HIGH = 1,
 }
 
-export type GPIOGroup = "lamp" | "pump" | "none"
+export type GPIOGroupId = "lamp" | "pump" | "none"
 
 export interface GPIO {
   pinNumber: ESP32GPIOPin
-  group?: GPIOGroup
+  group?: GPIOGroupId
   label?: string
   state: GPIOPinState
 }

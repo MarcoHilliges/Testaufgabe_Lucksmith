@@ -63,6 +63,15 @@ void sendDeviceSettings() {
   doc["deviceName"] = currentDeviceName;
   doc["wifiScanInterval"] = wifiScanInterval; // Der aktuell aktive Wert
 
+  // GPIO Metadaten anhängen
+  JsonArray gpioArray = doc.createNestedArray("gpioConfigs");
+  for (int i = 0; i < NUM_PINS; i++) {
+    JsonObject g = gpioArray.createNestedObject();
+    g["pinNumber"] = gpioConfigs[i].pinNumber;
+    g["group"] = gpioConfigs[i].group;
+    g["label"] = gpioConfigs[i].label;
+  }
+
   String payload;
   serializeJson(doc, payload);
 
@@ -148,6 +157,9 @@ int gpio_states[4] = {LOW, LOW, LOW, LOW};
 int control_pins[] = {PIN_2, PIN_4, PIN_16, PIN_17};
 // Anzahl der definierten Pins
 const int NUM_PINS = sizeof(control_pins) / sizeof(control_pins[0]);
+
+// GPIO Metadaten (Label/Group) - wird in littlefs_settings.h persistiert
+GPIOConfig gpioConfigs[NUM_PINS];
 
 // ----------------------------------------
 // Funktion: MQTT Callback
@@ -361,6 +373,9 @@ void sendHeartbeat() {
     JsonObject pinObj = gpio_states_json.createNestedObject();
     pinObj["pinNumber"] = control_pins[i];
     pinObj["state"] = gpio_states[i];
+    // Metadaten (group / label)
+    pinObj["group"] = gpioConfigs[i].group;
+    pinObj["label"] = gpioConfigs[i].label;
   }
 
   String payload;
@@ -468,6 +483,8 @@ void reportGpioStates() {
     JsonObject pinObj = gpio_states_json.createNestedObject();
     pinObj["pinNumber"] = control_pins[i];
     pinObj["state"] = gpio_states[i];
+    pinObj["group"] = gpioConfigs[i].group;
+    pinObj["label"] = gpioConfigs[i].label;
   }
 
   String payload;
@@ -522,6 +539,29 @@ void setup() {
     pinMode(control_pins[i], OUTPUT);
     digitalWrite(control_pins[i], LOW);
     gpio_states[i] = LOW; // Internen Zustand initialisieren
+  }
+
+  // Initialisiere GPIO-Metadaten: falls geladen, ordne sie passend zu control_pins
+  {
+    GPIOConfig temp[NUM_PINS];
+    for (int i = 0; i < NUM_PINS; i++) {
+      temp[i].pinNumber = control_pins[i];
+      temp[i].group = "none";
+      temp[i].label = "";
+    }
+    // Übernehme geladene configs (falls vorhanden) basierend auf pinNumber
+    for (int j = 0; j < NUM_PINS; j++) {
+      int loadedPin = gpioConfigs[j].pinNumber;
+      if (loadedPin < 0) continue;
+      for (int k = 0; k < NUM_PINS; k++) {
+        if (control_pins[k] == loadedPin) {
+          temp[k] = gpioConfigs[j];
+          break;
+        }
+      }
+    }
+    // Kopiere zurück
+    for (int i = 0; i < NUM_PINS; i++) gpioConfigs[i] = temp[i];
   }
 
   // --- Generiere die eindeutige Device ID ---

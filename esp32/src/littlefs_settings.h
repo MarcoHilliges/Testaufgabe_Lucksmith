@@ -18,6 +18,17 @@ struct DeviceSettings {
   String deviceName = "ESP32-Dashboard";
 };
 
+// Struktur für GPIO-Metadaten (Label / Group)
+struct GPIOConfig {
+  int pinNumber = -1;
+  String group = "none"; // "lamp" | "pump" | "none"
+  String label = "";
+};
+
+// Externe Referenzen: werden in main.cpp definiert
+extern const int NUM_PINS;
+extern GPIOConfig gpioConfigs[];
+
 // Globale Instanz für die aktuellen Einstellungen
 DeviceSettings deviceSettings;
 
@@ -58,6 +69,15 @@ bool saveSettings() {
   // Füge die aktuellen Einstellungen hinzu
   doc["wifiScanInterval"] = deviceSettings.wifiScanInterval;
   doc["deviceName"] = deviceSettings.deviceName;
+
+  // Wenn GPIO-Metadaten vorhanden sind, in die Settings schreiben
+  JsonArray gpioArray = doc.createNestedArray("gpioConfigs");
+  for (int i = 0; i < NUM_PINS; i++) {
+    JsonObject g = gpioArray.createNestedObject();
+    g["pinNumber"] = gpioConfigs[i].pinNumber;
+    g["group"] = gpioConfigs[i].group;
+    g["label"] = gpioConfigs[i].label;
+  }
 
   // Öffne die Datei zum Schreiben (überschreibe, falls sie existiert)
   File settingsFile = LittleFS.open(SETTINGS_FILE, "w");
@@ -130,6 +150,20 @@ bool loadSettings() {
     Serial.println(deviceSettings.deviceName);
   }
 
+  // Lade GPIO-Metadaten falls vorhanden
+  if (doc.containsKey("gpioConfigs") && doc["gpioConfigs"].is<JsonArray>()) {
+    JsonArray ga = doc["gpioConfigs"].as<JsonArray>();
+    int idx = 0;
+    for (JsonObject g : ga) {
+      if (idx >= NUM_PINS) break;
+      if (g.containsKey("pinNumber")) gpioConfigs[idx].pinNumber = g["pinNumber"].as<int>();
+      if (g.containsKey("group")) gpioConfigs[idx].group = g["group"].as<String>();
+      if (g.containsKey("label")) gpioConfigs[idx].label = g["label"].as<String>();
+      idx++;
+    }
+    Serial.println("GPIO-Metadaten geladen aus Settings.");
+  }
+
   Serial.println("Settings erfolgreich geladen!");
   return true;
 }
@@ -161,6 +195,13 @@ void printSettings() {
   Serial.println(" ms");
   Serial.print("Gerätename: ");
   Serial.println(deviceSettings.deviceName);
+  // GPIO Metadata ausgeben (falls definiert)
+  Serial.println("GPIO Metadaten:");
+  for (int i = 0; i < NUM_PINS; i++) {
+    Serial.print("  Pin "); Serial.print(gpioConfigs[i].pinNumber);
+    Serial.print(" - Group: "); Serial.print(gpioConfigs[i].group);
+    Serial.print(" - Label: "); Serial.println(gpioConfigs[i].label);
+  }
   Serial.println("===========================================\n");
 }
 
