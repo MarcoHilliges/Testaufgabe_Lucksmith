@@ -1,5 +1,7 @@
 import type { DeviceMessage, SettingsMessage } from "./message";
 
+export type ContentTab = "overview" | "wifi" | "gpio" | "settings";
+
 export type DeviceStatus = "online" | "error" | "offline";
 
 export enum GPIOPinState {
@@ -7,13 +9,13 @@ export enum GPIOPinState {
   HIGH = 1,
 }
 
-export type GPIOGroupId = "lamp" | "pump" | "none"
+export type GPIOGroupId = "lamp" | "pump" | "none";
 
 export interface GPIO {
-  pinNumber: GPIOPin
-  group?: GPIOGroupId
-  label?: string
-  state: GPIOPinState
+  pinNumber: GPIOPin;
+  group?: GPIOGroupId;
+  label?: string;
+  state: GPIOPinState;
 }
 
 export interface ExtendedGPIO extends GPIO {
@@ -22,13 +24,13 @@ export interface ExtendedGPIO extends GPIO {
   deviceStatus: DeviceStatus;
 }
 
-export type SetGPIO = Pick<GPIO, 'pinNumber' | 'state'>;
+export type SetGPIO = Pick<GPIO, "pinNumber" | "state">;
 
 export interface Device {
   id: string;
   name: string;
   lastSeen: number | null;
-  gpios: GPIO[]
+  gpios: GPIO[];
   deviceStatus: DeviceStatus;
   messages: DeviceMessage[];
 }

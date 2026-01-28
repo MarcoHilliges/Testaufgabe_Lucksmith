@@ -1,5 +1,5 @@
 <template>
-  <div class="relative min-h-screen flex flex-col">
+  <div class="relative h-screen flex flex-col">
     <NuxtPage />
 
     <AppFooter />

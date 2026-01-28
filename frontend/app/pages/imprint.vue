@@ -7,7 +7,7 @@ useHead({
 </script>
 
 <template>
-  <div class="flex flex-col items-center pt-[100px]">
+  <div class="h-full flex flex-col items-center pt-[100px]">
     <TopNav />
     <h1 class="mb-24">
       {{ t("common.imprint") }}

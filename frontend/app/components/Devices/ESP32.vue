@@ -1,14 +1,11 @@
 <script setup lang="ts">
 import { WifiZero, WifiLow, WifiHigh, Wifi } from "lucide-vue-next";
-import type { Device, GPIOPin, GPIOPinState } from "~/models/device";
+import type { ContentTab, Device, GPIOPin, GPIOPinState } from "~/models/device";
 import {
   MessageTopic,
   WifiSubTopic,
-  type DeviceMessage,
 } from "~/models/message";
 import type { MqttClientState } from "~/models/mqtt";
-
-type ContentTab = "overview" | "wifi" | "gpio" | "settings";
 
 const emit = defineEmits<{
   setGpioPin: [{ pin: GPIOPin; value: GPIOPinState }];
@@ -20,18 +17,11 @@ const emit = defineEmits<{
 const props = defineProps<{
   device: Device;
   clientState: MqttClientState;
+  activeTab?: ContentTab;
 }>();
 
 const toast = useToast();
 const { t } = useI18n();
-
-const content = ref<ContentTab>("overview");
-const tabs: { label: string; value: ContentTab }[] = [
-  { label: t("device.tabs.overview"), value: "overview" },
-  { label: t("device.tabs.wifi"), value: "wifi" },
-  { label: t("device.tabs.gpio"), value: "gpio" },
-  { label: t("device.tabs.settings"), value: "settings" },
-];
 
 // Status
 const lastStatusMessage = computed(() => {
@@ -130,8 +120,9 @@ watch(
 </script>
 
 <template>
-  <div
-    class="max-w-[400px] min-w-[300px] sm:min-w-[400px] h-[300px] flex flex-col border pt-16 m-24 rounded-md card-color light-effect"
+  <BasicCard
+    :device-status="deviceStatus"
+    class="max-w-[400px] min-w-[300px] sm:min-w-[400px] h-[300px] flex flex-col pt-16 m-24 rounded-md card-color light-effect"
   >
     <div class="mx-16">
       <div class="flex justify-between gap-10">
@@ -161,9 +152,6 @@ watch(
               </div>
             </template>
           </BasicTooltip>
-          <BasicTooltip :tooltipText="t(`common.status.${deviceStatus}`)">
-            <div class="w-12 h-12 rounded-full" :class="statusColor"></div>
-          </BasicTooltip>
         </div>
       </div>
       <div class="text-10">
@@ -173,7 +161,7 @@ watch(
 
     <div class="flex-grow overflow-hidden text-12">
       <div
-        v-if="content === 'overview'"
+        v-if="props.activeTab === 'overview'"
         class="flex justify-between gap-12 h-full px-16"
       >
         <DevicesSectionsWiFiScanList
@@ -196,11 +184,11 @@ watch(
 
       <DevicesSectionsWiFiHistory
         :wiFiScanMessages="wifiScanMessages"
-        v-else-if="content === 'wifi'"
+        v-else-if="props.activeTab === 'wifi'"
       />
 
       <DevicesSectionsGpioDetailList
-        v-else-if="content === 'gpio'"
+        v-else-if="props.activeTab === 'gpio'"
         :deviceName="props.device.name"
         :gpios="props.device.gpios"
         :gpioStateMessages="gpioMessages"
@@ -210,27 +198,11 @@ watch(
       />
 
       <DevicesSectionsSettings
-        v-else-if="content === 'settings'"
+        v-else-if="props.activeTab === 'settings'"
         :deviceStatus="deviceStatus"
         :deviceId="props.device.id"
         :deviceName="props.device.name"
       />
     </div>
-
-    <div class="mt-auto">
-      <button
-        v-for="tab in tabs"
-        :key="tab.value"
-        @click="content = tab.value"
-        :style="'width: ' + 100 / tabs.length + '%;'"
-        class="py-4 text-12"
-        :class="{
-          'border-t border-primary': content === tab.value,
-          'text-gray-500': content !== tab.value,
-        }"
-      >
-        {{ tab.label }}
-      </button>
-    </div>
-  </div>
+  </BasicCard>
 </template>

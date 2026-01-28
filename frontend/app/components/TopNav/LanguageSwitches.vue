@@ -7,7 +7,7 @@ const availableLocales = computed(() => {
 </script>
 
 <template>
-  <BasicCard class="flex justify-center w-[100px]">
+  <BasicCard class="flex justify-center w-[100px] h-full">
     <BasicCardButton
       v-for="language in locales"
       :key="language.code"

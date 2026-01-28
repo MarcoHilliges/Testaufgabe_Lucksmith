@@ -8,6 +8,7 @@ import {
 } from "~/models/message";
 import ESP32 from "./ESP32.vue";
 import type {
+  ContentTab,
   Device,
   ExtendedGPIO,
   GPIO,
@@ -17,7 +18,18 @@ import type {
   SetGPIO,
 } from "~/models/device";
 
+import {
+  Settings,
+  PanelsLeftBottom,
+  Wifi,
+  Cpu,
+  type LucideProps,
+} from "lucide-vue-next";
+import type { FunctionalComponent } from "vue";
+
 const { $mqtt, $mqttConnectionState } = useNuxtApp();
+
+const { t } = useI18n();
 
 const {
   devices,
@@ -30,6 +42,39 @@ const {
   saveDataIntoLocalStorage,
   loadDataFromLocalStorage,
 } = useDeviceStore();
+
+const activeTab = ref<ContentTab>("overview");
+const tabs: {
+  label: string;
+  value: ContentTab;
+  icon: FunctionalComponent<LucideProps>;
+  activeClasses?: string;
+}[] = [
+  {
+    label: t("device.tabs.overview"),
+    value: "overview",
+    icon: PanelsLeftBottom,
+    activeClasses: "text-success",
+  },
+  {
+    label: t("device.tabs.wifi"),
+    value: "wifi",
+    icon: Wifi,
+    activeClasses: "text-secondary",
+  },
+  {
+    label: t("device.tabs.gpio"),
+    value: "gpio",
+    icon: Cpu,
+    activeClasses: "text-warning",
+  },
+  {
+    label: t("device.tabs.settings"),
+    value: "settings",
+    icon: Settings,
+    activeClasses: "text-error",
+  },
+];
 
 onMounted(() => {
   loadDataFromStorage();
@@ -175,39 +220,67 @@ const gpioGroups = computed(() => {
 </script>
 
 <template>
-  <div class="mt-[92px] flex flex-col items-center">
+  <div class="pt-[92px] h-full flex flex-col items-center">
     <div class="w-full flex flex-wrap justify-center">
-      <template v-for="(group, index) in gpioGroups" :key="index">
-        <h2 class="w-full text-center mb-4">
-          {{
-            group.groupId !== "none" ? group.groupId.toUpperCase() : "UNGROUPED"
-          }}
-        </h2>
-        <div class="w-full flex flex-wrap justify-center">
-          <template v-for="gpio in group.gpios" :key="gpio.pinNumber">
-            <GPIOActorUniversal
-              :gpio="gpio"
-              class="m-8"
-              @setGpioPin="
-                ({ deviceId, pin, value }) =>
-                  setGpioPinState(deviceId, pin, value)
-              "
-            />
-          </template>
-        </div>
+      <template v-if="activeTab === 'overview'">
+        <template v-for="(group, index) in gpioGroups" :key="index">
+          <h2 class="w-full text-center mb-4">
+            {{
+              group.groupId !== "none"
+                ? group.groupId.toUpperCase()
+                : "UNGROUPED"
+            }}
+          </h2>
+          <div class="w-full flex flex-wrap justify-center">
+            <template v-for="gpio in group.gpios" :key="gpio.pinNumber">
+              <GPIOActorUniversal
+                :gpio="gpio"
+                class="m-8"
+                @setGpioPin="
+                  ({ deviceId, pin, value }) =>
+                    setGpioPinState(deviceId, pin, value)
+                "
+              />
+            </template>
+          </div>
+        </template>
       </template>
 
-      <template v-for="device in devices" :key="device.id">
-        <ESP32
-          :device="device"
-          :clientState="$mqttConnectionState"
-          @setGpioPin="
-            ({ pin, value }) => setGpioPinState(device.id, pin, value)
-          "
-          @getStatus="getStatus(device.id)"
-          @getWifiScan="getWifiScan(device.id)"
-          @getGpioStates="getGpioStates(device.id)"
-        />
+      <template v-else>
+        <template v-for="device in devices" :key="device.id">
+          <ESP32
+            :device="device"
+            :clientState="$mqttConnectionState"
+            :activeTab="activeTab"
+            @setGpioPin="
+              ({ pin, value }) => setGpioPinState(device.id, pin, value)
+            "
+            @getStatus="getStatus(device.id)"
+            @getWifiScan="getWifiScan(device.id)"
+            @getGpioStates="getGpioStates(device.id)"
+          />
+        </template>
+      </template>
+    </div>
+
+    <div class="mt-auto flex gap-16 p-16">
+      <template v-for="tab in tabs" :key="tab.value">
+        <BasicCard class="h-[100px] w-[100px] flex justify-center items-center">
+          <BasicCardButton
+            :isActive="activeTab === tab.value"
+            :is-selectable="true"
+            general-classes="w-full h-full"
+            :activeClasses="tab.activeClasses + ' pointer-events-none'"
+            @click="activeTab = tab.value"
+          >
+            <template #top>
+              <span class="text-12 text-primary">{{
+                t(`device.tabs.${tab.value}`)
+              }}</span>
+            </template>
+            <Component :is="tab.icon" :size="24" />
+          </BasicCardButton>
+        </BasicCard>
       </template>
     </div>
   </div>

@@ -7,7 +7,7 @@ useHead({
 </script>
 
 <template>
-  <div class="flex flex-col gap-48 pb-48">
+  <div class="h-full flex flex-col gap-48">
     <TopNav show-nav/>
     <Devices />
   </div>

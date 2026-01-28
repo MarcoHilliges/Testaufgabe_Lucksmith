@@ -39,7 +39,6 @@ const gpioState = computed(() => {
     class="flex justify-center items-center"
   >
     <BasicCardButton
-      class="border-r last:border-none"
       :is-active="gpioState"
       :is-selectable="true"
       general-classes="w-full h-full"

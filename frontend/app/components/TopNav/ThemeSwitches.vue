@@ -18,7 +18,7 @@ watch(themeModeInLocalStorage, (newValue) => {
 </script>
 
 <template>
-  <BasicCard class="flex justify-center w-[150px]">
+  <BasicCard class="flex justify-center w-[150px] h-full">
     <BasicCardButton
       v-for="mode in modes"
       :key="mode.value"
