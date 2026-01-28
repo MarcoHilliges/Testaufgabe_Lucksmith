@@ -60,3 +60,15 @@ h3 {
 .card-color {
   @apply bg-blue-100 dark:bg-blue-200 text-primary overflow-hidden;
 }
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  @apply rounded-sm  bg-neutral-200;
+}
+
+.custom-scrollbar::-webkit-scrollbar {
+  @apply w-4 h-4 bg-neutral-200;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  @apply rounded-lg bg-blue-950;
+}

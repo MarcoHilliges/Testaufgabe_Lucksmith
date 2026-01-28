@@ -131,7 +131,7 @@ onBeforeUnmount(() => {
       />
     </div>
 
-    <ul class="overflow-y-auto">
+    <ul class="overflow-y-auto custom-scrollbar">
       <li
         v-for="gpio in gpioPinStates"
         :key="gpio.pinNumber"

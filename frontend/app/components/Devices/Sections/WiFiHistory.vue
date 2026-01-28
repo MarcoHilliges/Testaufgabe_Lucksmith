@@ -46,7 +46,7 @@ const tabs = computed(() => {
         </button>
       </BasicTooltip>
     </div>
-    <ul class="overflow-y-auto">
+    <ul class="overflow-y-auto custom-scrollbar">
       <li
         v-for="(network, index) in currentList?.networks || []"
         :key="index"

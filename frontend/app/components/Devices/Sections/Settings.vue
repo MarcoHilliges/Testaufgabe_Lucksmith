@@ -145,7 +145,7 @@ function saveChanges() {
 <template>
   <div class="relative h-full flex flex-col">
     <ul
-      class="overflow-y-auto"
+      class="overflow-y-auto custom-scrollbar"
       :class="{
         'opacity-70': isLoadingSettings || props.deviceStatus === 'offline',
       }"
