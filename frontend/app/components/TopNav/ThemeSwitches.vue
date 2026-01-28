@@ -26,7 +26,7 @@ watch(themeModeInLocalStorage, (newValue) => {
       :is-active="themeModeInLocalStorage === mode.value"
       :is-selectable="themeModeInLocalStorage !== mode.value"
       general-classes="w-1/4"
-      :active-classes="`!w-1/2 ${mode.activeClasses}`"
+      :active-classes="`!w-1/2 ${mode.activeClasses} pointer-events-none`"
       @click="toggleThemeMode(mode.value)"
     >
       <component

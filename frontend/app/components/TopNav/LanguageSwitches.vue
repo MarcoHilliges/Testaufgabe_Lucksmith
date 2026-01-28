@@ -15,7 +15,7 @@ const availableLocales = computed(() => {
       :is-active="locale === language.code"
       :is-selectable="locale !== language.code"
       general-classes="w-1/3 text-10"
-      :active-classes="`!w-2/3 font-bold text-16`"
+      active-classes="!w-2/3 font-bold text-16 pointer-events-none"
       @click="setLocale(language.code)"
     >
       {{ language.code.toUpperCase() }}

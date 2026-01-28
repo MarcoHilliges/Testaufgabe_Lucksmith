@@ -55,6 +55,7 @@ onMounted(() => {
         id: deviceId,
         name: "",
         lastSeen: null,
+        deviceStatus: "offline",
         gpios: [],
         messages: [],
       };
@@ -69,7 +70,7 @@ onMounted(() => {
         const statusMessage: StatusMessage = JSON.parse(message.toString());
         statusMessage.timestamp = Date.now();
         deviceEntry.name = statusMessage.deviceName;
-
+        deviceEntry.deviceStatus = statusMessage.status;
         addStatusMessage(deviceId, statusMessage);
 
         break;
@@ -155,6 +156,7 @@ const gpioGroups = computed(() => {
       ...gpio,
       deviceId: device.id,
       deviceName: device.name,
+      deviceStatus: device.deviceStatus,
     })),
   );
   const groups: GPIOGroup[] = [];
@@ -183,7 +185,14 @@ const gpioGroups = computed(() => {
         </h2>
         <div class="w-full flex flex-wrap justify-center">
           <template v-for="gpio in group.gpios" :key="gpio.pinNumber">
-            <GPIOActorUniversal :gpio="gpio" class="m-8" />
+            <GPIOActorUniversal
+              :gpio="gpio"
+              class="m-8"
+              @setGpioPin="
+                ({ deviceId, pin, value }) =>
+                  setGpioPinState(deviceId, pin, value)
+              "
+            />
           </template>
         </div>
       </template>

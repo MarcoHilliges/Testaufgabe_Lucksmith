@@ -19,6 +19,7 @@ export interface GPIO {
 export interface ExtendedGPIO extends GPIO {
   deviceId: string;
   deviceName: string;
+  deviceStatus: DeviceStatus;
 }
 
 export type SetGPIO = Pick<GPIO, 'pinNumber' | 'state'>;
@@ -28,6 +29,7 @@ export interface Device {
   name: string;
   lastSeen: number | null;
   gpios: GPIO[]
+  deviceStatus: DeviceStatus;
   messages: DeviceMessage[];
 }
 

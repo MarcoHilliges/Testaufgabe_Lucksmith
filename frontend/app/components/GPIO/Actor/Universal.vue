@@ -1,6 +1,10 @@
 <script setup lang="ts">
-import type { ExtendedGPIO, GPIOPin } from "~/models/device";
+import type { ExtendedGPIO, GPIOPin, GPIOPinState } from "~/models/device";
 import { Power } from "lucide-vue-next";
+
+const emits = defineEmits<{
+  setGpioPin: [{ deviceId: string; pin: GPIOPin; value: GPIOPinState }];
+}>();
 
 const props = defineProps<{
   gpio: ExtendedGPIO;
@@ -22,29 +26,45 @@ const dimensions = computed(() => {
       : "100px",
   };
 });
+
+const gpioState = computed(() => {
+  return !!props.gpio.state;
+});
 </script>
 
 <template>
   <BasicCard
+    :device-status="props.gpio.deviceStatus"
     :style="{ width: dimensions.width, height: dimensions.height }"
     class="flex justify-center items-center"
   >
     <BasicCardButton
       class="border-r last:border-none"
-      :is-active="false"
+      :is-active="gpioState"
       :is-selectable="true"
-      general-classes="w-full h-full relative"
-      @click="console.log('Clicked GPIO Button')"
+      general-classes="w-full h-full"
+      active-classes="text-success"
+      @click="
+        $emit('setGpioPin', {
+          deviceId: props.gpio.deviceId,
+          pin: props.gpio.pinNumber,
+          value: gpioState ? 0 : 1,
+        })
+      "
     >
-      <span class="absolute top-8 left-0 right-0 text-12">
-        {{ props.gpio.label || `PIN ${props.gpio.pinNumber}` }}
-      </span>
+      <template #top>
+        <span class="text-12 text-primary">
+          {{ props.gpio.label || `PIN ${props.gpio.pinNumber}` }}
+        </span>
+      </template>
 
       <Power :size="24" />
 
-      <span class="absolute bottom-8 left-0 right-0 text-8">
-        {{ props.gpio.deviceName }}
-      </span>
+      <template #bottom>
+        <span class="text-8 text-primary">
+          {{ props.gpio.deviceName }}
+        </span>
+      </template>
     </BasicCardButton>
   </BasicCard>
 </template>

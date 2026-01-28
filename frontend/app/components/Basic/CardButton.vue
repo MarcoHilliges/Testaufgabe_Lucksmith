@@ -8,18 +8,23 @@ const props = defineProps<{
 }>();
 
 const cssClasses = computed(() => {
-    let classes = props.generalClasses || ''
-    if (props.isSelectable) classes += ` selectable ${props.selectableClasses || ''}`
-    if (props.isActive) classes += ` is-active ${props.activeClasses || ''}`
-    return classes
+  let classes = props.generalClasses || "";
+  if (props.isSelectable)
+    classes += ` selectable ${props.selectableClasses || ""}`;
+  if (props.isActive) classes += ` ${props.activeClasses || ""}`;
+  return classes;
 });
 </script>
 
 <template>
-  <button
-    :class="cssClasses"
-  >
+  <button class="relative" :class="cssClasses">
+    <div v-if="$slots.top" class="absolute top-8 left-0 right-0">
+      <slot name="top"></slot>
+    </div>
     <slot></slot>
+    <div v-if="$slots.bottom" class="absolute bottom-8 left-0 right-0">
+      <slot name="bottom"></slot>
+    </div>
   </button>
 </template>
 
@@ -30,10 +35,7 @@ button {
   @apply border-primary flex justify-center items-center;
 
   &.selectable {
-    @apply active:text-primary-active hover:text-primary-hover hover:bg-blue-200 dark:hover:bg-blue-100;
-  }
-  &.is-active {
-    @apply pointer-events-none;
+    @apply hover:bg-blue-200 dark:hover:bg-blue-100;
   }
 }
 </style>
