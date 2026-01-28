@@ -114,7 +114,8 @@ onMounted(() => {
       case MessageTopic.STATUS:
         const statusMessage: StatusMessage = JSON.parse(message.toString());
         statusMessage.timestamp = Date.now();
-        deviceEntry.name = statusMessage.deviceName;
+        if (statusMessage.deviceName)
+          deviceEntry.name = statusMessage.deviceName;
         deviceEntry.deviceStatus = statusMessage.status;
         addStatusMessage(deviceId, statusMessage);
 
@@ -224,13 +225,6 @@ const gpioGroups = computed(() => {
     <div class="w-full flex flex-wrap justify-center">
       <template v-if="activeTab === 'overview'">
         <template v-for="(group, index) in gpioGroups" :key="index">
-          <h2 class="w-full text-center mb-4">
-            {{
-              group.groupId !== "none"
-                ? group.groupId.toUpperCase()
-                : "UNGROUPED"
-            }}
-          </h2>
           <div class="w-full flex flex-wrap justify-center">
             <template v-for="gpio in group.gpios" :key="gpio.pinNumber">
               <GPIOActorUniversal

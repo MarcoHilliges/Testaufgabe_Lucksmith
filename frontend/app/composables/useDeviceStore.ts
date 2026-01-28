@@ -72,7 +72,7 @@ export const useDeviceStore = () => {
       statusMessages = { topic: MessageTopic.STATUS, messages: [] };
       device.messages.push(statusMessages);
     }
-    setGpioState(deviceId, message.gpioStates);
+    if (message.gpioStates?.length) setGpioState(deviceId, message.gpioStates);
 
     statusMessages.messages = [message, ...statusMessages.messages].slice(
       0,
@@ -104,11 +104,6 @@ export const useDeviceStore = () => {
       device.messages.push(gpioMessages);
     }
 
-    console.log(
-      "Adding GPIOStateMessage for device",
-      deviceId,
-      message.gpioStates,
-    );
     setGpioState(deviceId, message.gpioStates);
 
     gpioMessages.messages = [message, ...gpioMessages.messages].slice(0, 10); // Nur die letzten 10 Nachrichten behalten
